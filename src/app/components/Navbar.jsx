@@ -55,7 +55,7 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link href="/" className="text-xl font-semibold">
+            <Link href="/" className="text-xl text-secondary font-semibold">
               openthoughts
             </Link>
 
@@ -105,7 +105,7 @@ const Navbar = () => {
               <>
                 <Link
                   href="/write"
-                  className="hidden md:flex items-center gap-2 text-sm"
+                  className="hidden md:flex items-center gap-2 border-r pr-6 border-gray-300 text-sm"
                 >
                   <PencilSquareIcon className="size-5 text-black/60" />
                   <span className="text-black/70">Write</span>
@@ -114,7 +114,7 @@ const Navbar = () => {
                 <Link href="/profile">
                   <img
                     src={getAvatarUrl()}
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 p-[2px]  border-primary border  rounded-full object-cover"
                     alt="avatar"
                   />
                 </Link>
@@ -134,7 +134,7 @@ const Navbar = () => {
           />
 
           {/* Drawer */}
-          <div className="fixed top-0 left-0 h-full w-[260px] bg-white z-50 p-5">
+          <div className="fixed top-0 left-0 h-full w-[260px] bg-white z-50 p-5 ">
             <div className="flex justify-between items-center mb-12">
               <p className="text-lg font-semibold">Menu</p>
               <button onClick={() => setSidebarOpen(false)}>

@@ -3,48 +3,55 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  HomeIcon,
-  UserIcon,
-  BookOpenIcon,
-  ChartBarIcon,
-  QueueListIcon,
+  HomeIcon as HomeOutline,
+  UserIcon as UserOutline,
+  BookOpenIcon as BookOutline,
+  ChartBarIcon as ChartOutline,
+  QueueListIcon as QueueOutline,
 } from "@heroicons/react/24/outline";
 
-const menu = [
-  { name: "Home", href: "/", icon: HomeIcon },
-  { name: "Library", href: "/library", icon: BookOpenIcon },
-  { name: "Profile", href: "/profile", icon: UserIcon },
-  { name: "Stories", href: "/stories", icon: QueueListIcon },
-  { name: "Stats", href: "/stats", icon: ChartBarIcon },
-];
+import {
+  HomeIcon as HomeSolid,
+  UserIcon as UserSolid,
+  BookOpenIcon as BookSolid,
+  ChartBarIcon as ChartSolid,
+  QueueListIcon as QueueSolid,
+} from "@heroicons/react/24/solid";
 
+const menu = [
+  { name: "Home", href: "/", outline: HomeOutline, solid: HomeSolid },
+  { name: "Library", href: "/library", outline: BookOutline, solid: BookSolid },
+  { name: "Profile", href: "/profile", outline: UserOutline, solid: UserSolid },
+  { name: "Stories", href: "/stories", outline: QueueOutline, solid: QueueSolid },
+  { name: "Stats", href: "/stats", outline: ChartOutline, solid: ChartSolid },
+];
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="hidden md:flex flex-col w-60 h-[calc(100vh-70px)] py-8 border-r border-gray-300">
       <nav className="flex flex-col gap-2 px-6">
-        {menu.map((item) => {
-          const Icon = item.icon;
-          const active = pathname.startsWith(item.href);
+       {menu.map((item) => {
+  const active = pathname.endsWith(item.href);
+  const Icon = active ? item.solid : item.outline;
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-2 rounded-md text-sm
-                ${
-                  active
-                    ? " bg-gray-100 text-black"
-                    : "text-black/70 hover:bg-gray-100"
-                }
-              `}
-            >
-              <Icon className="w-5 h-5" />
-              {item.name}
-            </Link>
-          );
-        })}
+  return (
+    <Link
+      key={item.name}
+      href={item.href}
+      className={`flex items-center gap-3 px-4 py-2 rounded-md text-sm
+        ${
+          active
+            ? "bg-gray-100 text-secondary"
+            : "text-black/70 hover:bg-gray-100"
+        }
+      `}
+    >
+      <Icon className="w-5 h-5" />
+      {item.name}
+    </Link>
+  );
+})}
       </nav>
     </aside>
   );

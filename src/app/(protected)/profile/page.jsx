@@ -378,7 +378,7 @@ const Page = () => {
             <p>Display Name</p>
             <button
               onClick={() => setDisplayNameModal(true)}
-              className="underline cursor-pointer"
+              className="underline cursor-pointer "
             >
               {user.name || "—"}
             </button>
