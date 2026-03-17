@@ -214,8 +214,8 @@ const saveDraft = async () => {
         <div className="w-full mb-4 flex justify-between">
           <div className="  flex items-center w-full">
             <Link
-              className="text-sm pb-1  w-fit flex items-center gap-1"
-              href="/"
+              className="text-sm pb-1 bg-secondary  w-fit flex items-center gap-1"
+              href="/stories"
             >
               <p className="bg-yellow-500 p-1 mr-1 rounded-full text-xs"></p>
               <p className="">View drafts</p>
