@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { XCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { XCircleIcon, CheckCircleIcon, ArrowRightOnRectangleIcon, ArrowRightStartOnRectangleIcon, ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import Modal from "@/app/components/ui/Modal";
 import { account, storage } from "@/lib/appwrite";
 import { ID } from "@/lib/appwrite";
@@ -338,6 +338,7 @@ const Page = () => {
   };
 
   // ------------------ UI ------------------
+
   if (!user) return null; // or show loading/redirect as you prefer
 
   return (
@@ -345,12 +346,12 @@ const Page = () => {
       <div className="w-full max-w-[800px] pt-10 mx-auto ">
         <div className="flex justify-between items-baseline">
           <h1 className="text-[32px] tracking-tighter font-medium">Profile</h1>
-          <div className="relative">
+          <div className="relative ">
             <img
               src={getAvatarUrl()}
               alt="Profile"
               onClick={() => fileInputRef.current.click()}
-              className={`w-12 h-12 rounded-full object-cover cursor-pointer ${
+              className={`w-12 h-12 rounded-full ring-offset-4 border-2 border-red-600 p-[2px] object-cover cursor-pointer ${
                 avatarUploading ? "opacity-50" : ""
               }`}
             />
@@ -372,12 +373,12 @@ const Page = () => {
         </div>
 
         <hr className="mb-4 mt-2 opacity-20" />
-        <div className="w-full flex flex-col gap-4">
+        <div className="w-full flex flex-col mt-10 gap-6">
           <div className="flex items-center text-[14px] justify-between text-black/60">
             <p>Display Name</p>
             <button
               onClick={() => setDisplayNameModal(true)}
-              className="underline"
+              className="underline cursor-pointer"
             >
               {user.name || "—"}
             </button>
@@ -387,9 +388,9 @@ const Page = () => {
             <p>User Name</p>
             <button
               onClick={() => setUsernameModalOpen(true)}
-              className="underline"
+              className="underline cursor-pointer"
             >
-              {user.prefs?.username || "—"}
+             <ArrowUpRightIcon className="w-4 h-4 inline" /> 
             </button>
           </div>
 
@@ -403,35 +404,42 @@ const Page = () => {
             className="flex cursor-pointer items-center text-[14px] justify-between text-black/60"
           >
             <p>Change Password</p>
-            <p className="cursor-pointer underline">Update</p>
+            <p className="cursor-pointer underline">
+              <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+            </p>
           </div>
           <div
             onClick={() => setPreferencesOpen(true)}
             className="flex cursor-pointer items-center text-[14px] justify-between text-black/60"
           >
             <p>Preferences</p>
-            <p className="cursor-pointer underline">Update</p>
+            <p className="cursor-pointer underline">
+              <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+            </p>
           </div>
-          <div className="flex items-center text-[14px] justify-between text-black/60">
+          <div className="flex items-center text-[14px]  justify-between text-black/60">
             <p>About</p>
-            <button onClick={() => setBioModalOpen(true)} className="underline">
-              Update
+            <button onClick={() => setBioModalOpen(true)} className=" cursor-pointer">
+                  <ArrowUpRightIcon className="w-4 h-4 inline" /> 
             </button>
           </div>
-
+<hr className="my-10 opacity-20" />
           <button
             onClick={() => {
               handleLogout();
             }}
-            className="w-full cursor-pointer text-left "
+            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-200 border border-gray-300 py-5 px-4 rounded-lg "
           >
-            <p className="text-red-500 text-[14px]">Logout</p>
+            <div>
+              <p className="text-red-500 text-[14px]">Logout</p>
             <p className="text-[12px] text-black/60">
               Permanently delete your account and all of your content.
             </p>
+            </div>
+            <ArrowRightStartOnRectangleIcon className="w-6 h-6 ml-1 inline text-red-500" />
           </button>
 
-          <button
+          {/* <button
             onClick={() => setDeleteModalOpen(true)}
             className="w-full cursor-pointer text-left "
           >
@@ -439,7 +447,12 @@ const Page = () => {
             <p className="text-[12px] text-black/60">
               Permanently delete your account and all of your content.
             </p>
-          </button>
+          </button> */}
+        </div>
+        <div className="mt-8 w-full">
+          <h1 className="text-[16px] text-center  text-black/40">
+            Made with <span className="text-red-600">&#10084;</span>  <span >in India</span>
+          </h1>
         </div>
       </div>
 
