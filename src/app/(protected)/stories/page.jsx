@@ -16,7 +16,7 @@ const page = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDraftId, setSelectedDraftId] = useState(null);
   const [deleteDraftModal, setDeleteDraftModal] = useState(false);
-    const [deletePublishedModal, setDeletePublishedModal] = useState(false);
+  const [deletePublishedModal, setDeletePublishedModal] = useState(false);
 
   useEffect(() => {
     if (!user?.$id) return;
@@ -110,7 +110,7 @@ const page = () => {
       alert("Failed to delete draft");
     }
   };
-
+  console.log(publishedArticles);
 
   return (
     <div className="w-full">
@@ -121,22 +121,20 @@ const page = () => {
         <div className="mt-6 border-b border-gray-200 flex gap-6">
           <button
             onClick={() => setActiveTab("drafts")}
-            className={`pb-2 text-[14px] ${
-              activeTab === "drafts"
+            className={`pb-2 text-[14px] ${activeTab === "drafts"
                 ? "text-black border-b-2 border-black"
                 : "text-gray-500"
-            }`}
+              }`}
           >
             Drafts
           </button>
 
           <button
             onClick={() => setActiveTab("published")}
-            className={`pb-2 text-[14px] ${
-              activeTab === "published"
+            className={`pb-2 text-[14px] ${activeTab === "published"
                 ? "text-black border-b-2 border-black"
                 : "text-gray-500"
-            }`}
+              }`}
           >
             Published
           </button>
@@ -160,7 +158,7 @@ const page = () => {
                 {drafts.map((draft) => (
                   <div
                     key={draft.$id}
-                    className="py-8 flex justify-between px-2 rounded"
+                    className=" flex justify-between px-2 rounded"
                   >
                     <div>
                       <p className="text-[17px] font-medium">
@@ -170,10 +168,10 @@ const page = () => {
                       <p className="text-[12px] text-gray-500 mt-1">
                         Last edited{" "}
                         {new Date(draft.$updatedAt).toLocaleDateString()}
-                      </p>  
+                      </p>
                     </div>
-                    <div className="flex gap-6">
-                      <Link href={`/write/${draft.$id}`} className="cursor-pointer">
+                    <div className="flex items-center gap-6">
+                      <Link href={`/write/${draft.$id}`} className="cursor-pointer border-r pr-6 border-gray-300">
                         <PencilSquareIcon className="w-5 h-5 text-gray-700" />
                       </Link>
                       <button
@@ -199,16 +197,16 @@ const page = () => {
               )}
 
               {/* {!loading && drafts.length === 0 && (
-                <p className="text-sm text-gray-500">
-                  You don’t have any drafts yet.
-                </p>
-              )} */}
+                  <p className="text-sm text-gray-500">
+                    You don’t have any drafts yet.
+                  </p>
+                )} */}
 
               <div className="flex flex-col divide-y divide-gray-200">
                 {publishedArticles.map((article) => (
                   <div
                     key={article.$id}
-                    className="py-8 flex justify-between px-2 rounded"
+                    className=" flex justify-between px-2 rounded"
                   >
                     <div>
                       <p className="text-[17px] font-medium">
@@ -220,8 +218,14 @@ const page = () => {
                         {new Date(article.$updatedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex gap-6">
-                      <Link href={`/write/${article.$id}?type=published`} className="cursor-pointer">
+                    <div className="flex gap-6 items-center">
+                      <Link
+                        href={`/read/${article.slug}`}
+                        className="text-sm text-blue-600 border-r pr-6 border-gray-300"
+                      >
+                        View
+                      </Link>
+                      <Link href={`/write/${article.$id}?type=published`} className="cursor-pointer border-r pr-6 border-gray-300">
                         <PencilSquareIcon className="w-5 h-5 text-gray-700" />
                       </Link>
                       <button
@@ -262,7 +266,7 @@ const page = () => {
           </button>
         </div>
       </Modal>
-            <Modal open={deletePublishedModal} onOpenChange={setDeletePublishedModal}>
+      <Modal open={deletePublishedModal} onOpenChange={setDeletePublishedModal}>
         <h2 className="text-[16px] mb-4">Delete Draft</h2>
         <p className="text-[14px] text-black/60">
           Clicking delete will permanently remove this story. This action cannot
