@@ -237,6 +237,11 @@ export default function ReadArticlePage() {
       <h1 className=" text-[28px] md:text-[42px] font-serif pt-6 leading-tight">
         {article.title}
       </h1>
+      {/* short description optional */}
+      <p className="text-xl mt-5 text-black/50">
+        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nemo, molestias. Dolor cupiditate id ea vero a, repudiandae voluptatum officiis numquam!
+
+      </p>
 
       {/* AUTHOR SECTION */}
       <div className="w-full flex border-l-6 pl-4 border-green-600 my-8 justify-between">
@@ -257,7 +262,7 @@ export default function ReadArticlePage() {
           <p>{article.readTime} min read</p>
         </div>
 
-        <button onClick={toggleBookmark}>
+        <button className="cursor-pointer" onClick={toggleBookmark}>
           {isBookmarked ? (
             <IoBookmark size={18} className="text-green-700" />
           ) : (
@@ -268,21 +273,8 @@ export default function ReadArticlePage() {
           )}
         </button>
       </div>
-
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          className="w-full my-8 rounded"
-          alt={article.title}
-        />
-      )}
-
-      <div className="prose prose-lg max-w-none text-[14px] md:text-[20px] leading-relaxed">
-        {HTMLReactParser(article.content)}
-      </div>
-
       {/* LIKE / SHARE */}
-      <div className="mt-10 flex justify-end gap-8">
+      <div className="mt-10 flex justify-between gap-8">
         <div className="flex items-center gap-2">
            <button
             onClick={() => toggleLike(article.$id)} // later rename to onSpark
@@ -303,11 +295,25 @@ export default function ReadArticlePage() {
 
         <button
           onClick={handleShare}
-          className="h-8 w-8 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center transition"
+          className="h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition"
         >
           <IoIosShareAlt size={18} />
         </button>
       </div>
+
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          className="w-full my-8 rounded"
+          alt={article.title}
+        />
+      )}
+
+      <div className="prose prose-lg max-w-none text-[14px] md:text-[20px] leading-relaxed">
+        {HTMLReactParser(article.content)}
+      </div>
+
+      
 
    
 
