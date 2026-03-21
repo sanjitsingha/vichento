@@ -96,7 +96,7 @@ const YourReadingLIst = ({refreshKey}) => {
             <Link
               key={article.$id}
               href={`/read/${article.slug}`}
-              className="flex gap-4 items-center"
+              className="flex gap-12 items-center"
             >
               <div className="flex-1">
                 <div className="w-full flex gap-2 ">
@@ -105,10 +105,10 @@ const YourReadingLIst = ({refreshKey}) => {
                   </div>
                   <p className="text-sm text-gray-500">{article.authorName}</p>
                 </div>
-                <p className="text-[16px] mt-2 font-medium"> {truncateText(article.title, 30)}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[14px] mt-2 font-medium"> {truncateText(article.title, 30)}</p>
+                {/* <p className="text-[10px] text-gray-500 mt-1">
                   {new Date(article.$createdAt).toDateString()}
-                </p>
+                </p> */}
               </div>
 
               {imageUrl && (
@@ -124,7 +124,7 @@ const YourReadingLIst = ({refreshKey}) => {
           );
         })}
       </div>
-      <div className="w-full mt-6 border-t border-gray-200 pt-3">
+      <div className="w-full mt-6 border-t border-gray-300/80 pt-3">
         <Link
           href="/library"
           className="text-sm text-green-600 hover:underline block text-center"

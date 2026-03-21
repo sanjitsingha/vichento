@@ -142,9 +142,10 @@ export default function Homepage() {
 
         {/* ================= RIGHT SIDEBAR ================= */}
         <div className="hidden lg:block w-[320px] pt-6 border-l border-gray-200 pl-6">
-          <div className="sticky top-[90px]">
+          <div className="sticky top-[80px]">
             <YourReadingLIst refreshKey={version} />
           </div>
+          
         </div>
       </div>
     </div>

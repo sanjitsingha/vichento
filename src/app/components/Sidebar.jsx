@@ -29,7 +29,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex flex-col w-60 h-[calc(100vh-70px)] py-8 border-r border-gray-300">
+    <aside className="hidden md:flex flex-col sticky top-[60px] w-60 h-[calc(100vh-70px)]  py-8">
       <nav className="flex flex-col gap-2 px-6">
        {menu.map((item) => {
   const active = pathname.endsWith(item.href);
@@ -39,7 +39,7 @@ export default function Sidebar() {
     <Link
       key={item.name}
       href={item.href}
-      className={`flex items-center gap-3 px-4 py-2 rounded-md text-sm
+      className={`flex items-center gap-3 px-4 py-2 rounded-md text-[16px]
         ${
           active
             ? "bg-gray-100 text-secondary"
@@ -53,6 +53,18 @@ export default function Sidebar() {
   );
 })}
       </nav>
+      <div className=" flex flex-col w-full  h-full">
+        <div className="flex-1"></div>
+        <div className=" flex gap-4 pl-8">
+          <Link href="/privacy-policy" className="text-black/30 border-r pr-4 border-gray-300 text-[11px] font-medium">
+            Privacy Policy
+          </Link>
+          <Link href="/upgrade" className="text-black/30 text-[11px] font-medium">
+            Terms of Service
+          </Link>
+        </div>
+
+      </div>
     </aside>
   );
 }
