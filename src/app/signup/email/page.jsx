@@ -92,30 +92,33 @@ export default function EmailSignup() {
       {/* --------------------- STEP 1 UI --------------------- */}
       {step === 1 && (
         <>
-          <h1 className="text-2xl mb-6">Sign up with email</h1>
+          <h1 className='text-3xl font-semibold tracking-tighter mb-6 align-start'>Create your account</h1>
 
           <form
             className="w-full max-w-[300px] flex flex-col"
             onSubmit={handleSignupStep1}
           >
+            <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='email'>Email</label>
             {/* EMAIL */}
             <input
               type="email"
-              placeholder="Email"
+              placeholder="johndoe@hotmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 mb-3"
+              className="font-semibold placeholder:text-gray-500 placeholder:text-xs placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1  "
               required
             />
+            
 
             {/* PASSWORD WITH EYE ICON */}
-            <div className="relative w-full mb-3">
+            <div className="relative w-full mt-4 mb-3">
+              <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='password'>Password</label>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                placeholder="123***"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 w-full pr-10"
+                className="font-semibold placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
                 required
               />
 
@@ -142,7 +145,7 @@ export default function EmailSignup() {
             {/* NEXT BUTTON */}
             <button
               disabled={loading}
-              className="bg-black text-white rounded-full py-2 mt-4 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="bg-black text-white rounded-full py-2 mt-8 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading ? "Please wait..." : "Next →"}
             </button>
