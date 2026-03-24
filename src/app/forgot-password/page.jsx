@@ -44,7 +44,6 @@ const [email, setEmail] = useState("");
   return (
     <div className='w-full'>
       <div className='max-w-[800px] w-full mx-auto pt-20'>
-
         <div>
           <h1 className='text-3xl font-semibold tracking-tighter'>Forgot Password!</h1>
           <p className='text-sm mt-2 text-black/60'>No worries. Enter your details below and we’ll help you regain access to your account.</p>

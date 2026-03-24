@@ -6,6 +6,7 @@ import { useAuthContext } from "@/context/AuthContext";
 import { logoutUser } from "@/lib/logout";
 import { useRouter } from "next/navigation";
 import { storage } from "@/lib/appwrite";
+import Image from "next/image";
 
 import { MdArrowOutward } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
@@ -56,7 +57,14 @@ const Navbar = () => {
             )}
 
             <Link href="/" className="text-xl text-secondary font-semibold">
-              openthoughts
+              <Image
+                src="/vichento_logo_black.png"
+                alt="logo"
+                width={100}
+                height={100}
+              />
+
+              
             </Link>
 
             {/* Desktop search */}
