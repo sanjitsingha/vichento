@@ -5,9 +5,24 @@ import Link from "next/link";
 import { account, ID } from "@/lib/appwrite";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 
 // profession options
+
+const avatar = [
+  "69c3b1190013e1c34def",
+  "69c3b11400366576f43f",
+  "69c3b1100001e28a6f53",
+  "69c3b10b0017652ee857",
+  "69c3b105001867b3414e",
+  "69c3b0ff00156e6886a7",
+  "69c3b0f60016e5e370cd",
+  "69c3b0f00026e0b5d9e5",
+  "69c3b0e3002d6b4bc943",
+  "69c3b0de0017064e0a1e",
+  "69c3b0ce003aecbf2faa",
+  "69c3b0b90038fc4c6a8d",
+]
 const professions = [
   "Student",
   "Freelancer",
@@ -21,8 +36,12 @@ const professions = [
   "Doctor",
   "Artist",
   "Other",
-];  
+];
 
+
+// const getRandomAvatar = () => {
+//   return AVATARS[Math.floor(Math.random() * AVATARS.length)];
+// };
 export default function EmailSignup() {
   const router = useRouter();
   const { setUser } = useAuthContext();
@@ -45,54 +64,77 @@ export default function EmailSignup() {
   // STEP 1 → Create user
   const handleSignupStep1 = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
 
-    try {
-      await account.create({
-        userId: ID.unique(),
-        email,
-        password: pass,
-      });
+    // Password validation
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
 
-      const session = await account.createEmailPasswordSession({
-        email,
-        password: pass,
-      });
-
-      setUser(session.user);
-
-      setStep(2);
-    } catch (error) {
-      setErrorMsg(error.message);
+    if (!passwordRegex.test(pass)) {
+      return setErrorMsg(
+        "Password must be at least 6 characters and include a letter, number, and special character."
+      );
     }
 
-    setLoading(false);
+    // Email basic check
+    if (!email) {
+      return setErrorMsg("Please enter a valid email.");
+    }
+
+    // Move to next step
+    setStep(2);
   };
 
   // STEP 2 → Save profile preferences
-  const handleSignupStep2 = async () => {
-    setLoading(true);
-    setErrorMsg("");
+const handleSignupStep2 = async () => {
+  setLoading(true);
+  setErrorMsg("");
 
-    try {
-      await account.updateName(name);
-      await account.updatePrefs({ dob, profession });
-
-      router.push("/");
-    } catch (error) {
-      setErrorMsg(error.message);
-    }
-
+  if (!name || !dob || !profession) {
     setLoading(false);
-  };
+    return setErrorMsg("Please fill all fields.");
+  }
 
+  try {
+    // ✅ Create account
+    await account.create({
+      userId: ID.unique(),
+      email,
+      password: pass,
+      name,
+    });
+
+    // ✅ Login
+    const session = await account.createEmailPasswordSession({
+      email,
+      password: pass,
+    });
+
+    setUser(session.user);
+
+    // ✅ Assign RANDOM avatar (fileId)
+    const avatar = getRandomAvatar();
+
+    // ✅ Save prefs
+    await account.updatePrefs({
+      dob,
+      profession,
+      // avatar,
+    });
+
+    router.push("/");
+  } catch (error) {
+    setErrorMsg(error.message);
+  }
+
+  setLoading(false);
+};
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center px-6">
+    <div className="w-full min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6">
       {/* --------------------- STEP 1 UI --------------------- */}
       {step === 1 && (
         <>
-          <h1 className='text-3xl font-semibold tracking-tighter mb-6 align-start'>Create your account</h1>
+          <h1 className='text-3xl font-semibold tracking-tighter align-start'>Create your account</h1>
+          <p className='text-sm mt-2 text-black/60 text-center mb-10'>It only takes a moment to get started with your account.</p>
 
           <form
             className="w-full max-w-[300px] flex flex-col"
@@ -108,7 +150,7 @@ export default function EmailSignup() {
               className="font-semibold placeholder:text-gray-500 placeholder:text-xs placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1  "
               required
             />
-            
+
 
             {/* PASSWORD WITH EYE ICON */}
             <div className="relative w-full mt-4 mb-3">
@@ -125,7 +167,7 @@ export default function EmailSignup() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 cursor-pointer "
               >
                 {showPassword ? (
                   <EyeSlashIcon className="w-5 h-5" />
@@ -137,21 +179,22 @@ export default function EmailSignup() {
 
             {/* ERROR */}
             {errorMsg && (
-              <p className="text-red-500 text-sm mb-3 text-center">
-                {errorMsg}
-              </p>
+              <div className="w-full bg-red-100 p-2 border border-red-300 rounded-sm mt-4">
+                <p className="text-xs text-red-500">{errorMsg}</p>
+              </div>
             )}
+
 
             {/* NEXT BUTTON */}
             <button
               disabled={loading}
-              className="bg-black text-white rounded-full py-2 mt-8 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="bg-black text-white rounded-full cursor-pointer  py-2 mt-8 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading ? "Please wait..." : "Next →"}
             </button>
           </form>
 
-          <Link href="/signup" className="mt-6 underline text-sm">
+          <Link href="/signup" className="mt-6  cursor-pointer underline text-sm">
             Go back
           </Link>
         </>
@@ -160,35 +203,34 @@ export default function EmailSignup() {
       {/* --------------------- STEP 2 UI --------------------- */}
       {step === 2 && (
         <div className="w-full max-w-[300px]">
-          <h1 className="text-2xl mb-6 text-center">Tell us about you</h1>
-
+          <h1 className="text-3xl font-semibold tracking-tighter  text-center">Tell us about you</h1>
+          <label className='block text-xs font-medium mt-10 text-gray-700' htmlFor='name'>Full Name</label>
           <input
             type="text"
-            placeholder="Full Name"
-            className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 mb-3 w-full"
+
+            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-
+          <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='dob'>Date of Birth</label>
           <input
             type="date"
-            className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 mb-3 w-full"
+            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 k outline-none py-1 "
             value={dob}
             onChange={(e) => setDob(e.target.value)}
           />
 
-          <p className="mb-2 text-gray-600">Choose your profession</p>
+          <p className="mb-2 mt-6 text-gray-600">Choose your profession</p>
 
           <div className="flex flex-wrap gap-2 mb-4">
             {professions.map((p) => (
               <button
                 key={p}
                 type="button"
-                className={`px-3 py-1 rounded-full border ${
-                  profession === p
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-700"
-                }`}
+                className={`px-3 py-1 text-sm rounded-full border ${profession === p
+                  ? "bg-black text-white"
+                  : "bg-gray-100 text-gray-700"
+                  }`}
                 onClick={() => setProfession(p)}
               >
                 {p}
@@ -196,21 +238,23 @@ export default function EmailSignup() {
             ))}
           </div>
 
+          {/* ERROR */}
           {errorMsg && (
-            <p className="text-red-500 text-sm mb-3 text-center">{errorMsg}</p>
+            <div className="w-full bg-red-100 p-2 border border-red-300 rounded-sm mt-4">
+              <p className="text-xs text-red-500">{errorMsg}</p>
+            </div>
           )}
-
           <button
             onClick={handleSignupStep2}
             disabled={loading}
-            className="bg-black text-white rounded-full py-2 w-full disabled:opacity-60"
+            className="bg-black cursor-pointer text-white rounded-full py-2 mt-4 w-full disabled:opacity-60"
           >
             {loading ? "Saving..." : "Create Account"}
           </button>
 
           <button
             onClick={() => setStep(1)}
-            className="mt-4 underline block mx-auto text-sm"
+            className="mt-4 underline block cursor-pointer mx-auto text-sm"
           >
             Go back
           </button>

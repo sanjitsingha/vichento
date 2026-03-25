@@ -46,30 +46,30 @@ export default function EmailLogin() {
         onSubmit={handleLogin}
       >
         {/* EMAIL INPUT */}
+        <label className='block text-xs font-medium mt-10 text-gray-700' htmlFor='email'>Email</label>
         <input
           type="email"
-          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 mb-3"
+          className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
           required
         />
 
         {/* PASSWORD INPUT WITH EYE ICON */}
+          <label className='block text-xs font-medium mt-6 text-gray-700' htmlFor='password'>Password</label>
         <div className="relative w-full">
           <input
             type={showPassword ? "text" : "password"}
-            placeholder="Password"
             value={pass}
             onChange={(e) => setPass(e.target.value)}
-            className="bg-gray-200 text-[14px] focus:border outline-none rounded-sm px-3 py-2 w-full pr-10"
+            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
             required
           />
 
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
+            className="absolute right-2 cursor-pointer top-1/2 -translate-y-1/2 text-gray-600"
           >
             {showPassword ? (
               <EyeSlashIcon className="w-5 h-5" />
@@ -80,20 +80,22 @@ export default function EmailLogin() {
         </div>
 
         {/* ERROR MESSAGE */}
-        {errorMsg && (
-          <p className="text-red-500 text-sm mb-3 text-center">{errorMsg}</p>
-        )}
+         {errorMsg && (
+            <div className="w-full bg-red-100 p-2 border border-red-300 rounded-sm mt-6">
+              <p className="text-xs text-red-500">{errorMsg}</p>
+            </div>
+          )}
 
         {/* SUBMIT BUTTON */}
         <button
           disabled={loading}
-          className="bg-black text-white rounded-full py-2 mt-4 disabled:opacity-60"
+          className="bg-black cursor-pointer text-white rounded-full py-2 mt-6 disabled:opacity-60"
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 
-      <Link href="/signin" className="mt-6 underline text-sm">
+      <Link href="/signin" className="mt-4 underline text-sm">
         Go back
       </Link>
     </div>
