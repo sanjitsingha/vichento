@@ -85,49 +85,54 @@ export default function EmailSignup() {
   };
 
   // STEP 2 → Save profile preferences
-const handleSignupStep2 = async () => {
-  setLoading(true);
-  setErrorMsg("");
+  const handleSignupStep2 = async () => {
+    setLoading(true);
+    setErrorMsg("");
 
-  if (!name || !dob || !profession) {
+    if (!name || !dob || !profession) {
+      setLoading(false);
+      return setErrorMsg("Please fill all fields.");
+    }
+
+    try {
+      // ✅ Create account
+      await account.create({
+        userId: ID.unique(),
+        email,
+        password: pass,
+        name,
+      });
+
+
+      // ✅ Login
+      const session = await account.createEmailPasswordSession({
+        email,
+        password: pass,
+      });
+      await account.createVerification(
+        "http://localhost:3000/verify-email"
+      );
+      setUser(session.user);
+
+
+      // ✅ Assign RANDOM avatar (fileId)
+      const selectedAvatar = getRandomAvatar();
+
+      // ✅ Save prefs
+      await account.updatePrefs({
+        dob,
+        profession,
+        avatar: selectedAvatar,
+      });
+
+      router.push("/");
+      // router.push("/verify-email");
+    } catch (error) {
+      setErrorMsg(error.message);
+    }
+
     setLoading(false);
-    return setErrorMsg("Please fill all fields.");
-  }
-
-  try {
-    // ✅ Create account
-    await account.create({
-      userId: ID.unique(),
-      email,
-      password: pass,
-      name,
-    });
-
-    // ✅ Login
-    const session = await account.createEmailPasswordSession({
-      email,
-      password: pass,
-    });
-
-    setUser(session.user);
-
-    // ✅ Assign RANDOM avatar (fileId)
-const selectedAvatar = getRandomAvatar();
-
-    // ✅ Save prefs
-    await account.updatePrefs({
-      dob,
-      profession,
-      avatar:   selectedAvatar,
-    });
-
-    router.push("/");
-  } catch (error) {
-    setErrorMsg(error.message);
-  }
-
-  setLoading(false);
-};
+  };
   return (
     <div className="w-full min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6">
       {/* --------------------- STEP 1 UI --------------------- */}

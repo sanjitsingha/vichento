@@ -19,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Vichento",
+  title: "Vichento - Read. Write. Think deeper",
   description: "",
 };
 

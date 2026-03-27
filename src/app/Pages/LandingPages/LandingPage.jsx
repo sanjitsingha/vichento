@@ -20,11 +20,11 @@ const LandingPage = () => {
             font-semibold
           "
           >
-            Human <br /> stories & ideas
+            Built on <br /> stories & ideas
           </p>
 
           <p className="text-[16px] md:text-[18px] lg:text-[20px] mt-6 lg:mt-10 text-gray-700">
-            A place to read, write, and deepen your understanding
+            A space for thoughtful reading and meaningful writing
           </p>
 
           <Link
