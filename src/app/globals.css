@@ -39,7 +39,7 @@
   --color-foreground: var(--foreground);
   --color-green-primary: #29903b;
   --font-sans: var(--font-geist-sans);
-   --font-creato: 'CreatoDisplay', sans-serif;
+  --font-creato: 'CreatoDisplay', sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 

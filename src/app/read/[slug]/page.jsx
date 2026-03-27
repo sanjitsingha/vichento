@@ -8,6 +8,8 @@ import HTMLReactParser from "html-react-parser";
 import { GoBookmark, GoBookmarkFill } from "react-icons/go";
 import { IoBookmark, IoBookmarkOutline, IoBulbOutline } from "react-icons/io5";
 import { IoIosShareAlt } from "react-icons/io";
+import { IoArrowRedoOutline } from "react-icons/io5";
+
 import { useAuthContext } from "@/context/AuthContext";
 import RelatedArticles from "@/app/components/RelatedArticles";
 import { PiSparkle, PiSparkleFill } from "react-icons/pi";
@@ -221,7 +223,39 @@ export default function ReadArticlePage() {
   };
 
   /* ---------------- RENDER ---------------- */
-  if (loading) return <p className="text-center mt-20">Loading article…</p>;
+if (loading) {
+  return (
+    <div className="max-w-[800px] mx-auto p-4 animate-pulse">
+      
+      {/* Title */}
+      <div className="h-8 bg-gray-300 rounded w-3/4 mt-6"></div>
+      <div className="h-8 bg-gray-300 rounded w-1/2 mt-2"></div>
+
+      {/* Description */}
+      <div className="h-4 bg-gray-300 rounded w-full mt-6"></div>
+      <div className="h-4 bg-gray-300 rounded w-5/6 mt-2"></div>
+
+      {/* Author */}
+      <div className="flex items-center gap-3 mt-8">
+        <div className="w-6 h-6 rounded-full bg-gray-300"></div>
+        <div className="h-4 bg-gray-300 rounded w-24"></div>
+        <div className="h-4 bg-gray-300 rounded w-20"></div>
+      </div>
+
+      {/* Image */}
+      <div className="w-full h-[200px] bg-gray-300 rounded mt-8"></div>
+
+      {/* Content lines */}
+      <div className="mt-8 space-y-3">
+        <div className="h-4 bg-gray-300 rounded w-full"></div>
+        <div className="h-4 bg-gray-300 rounded w-11/12"></div>
+        <div className="h-4 bg-gray-300 rounded w-10/12"></div>
+        <div className="h-4 bg-gray-300 rounded w-9/12"></div>
+        <div className="h-4 bg-gray-200 rounded w-full"></div>
+      </div>
+    </div>
+  );
+}
   if (!article) return <p className="text-center mt-20">Article not found</p>;
 
   const imageUrl = article.featuredImage
@@ -234,17 +268,17 @@ export default function ReadArticlePage() {
         <p className="text-gray-500">Advertisment Area</p>
       </div> */}
 
-      <h1 className=" text-[28px] md:text-[42px] font-serif pt-6 leading-tight">
+      <h1 className=" text-2xl  md:text-[30px] font-creato tracking-tight pt-6 leading-tight">
         {article.title}
       </h1>
       {/* short description optional */}
-      <p className="text-xl mt-5 text-black/50">
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nemo, molestias. Dolor cupiditate id ea vero a, repudiandae voluptatum officiis numquam!
+      <p className="text-xs md:text-base mt-5 text-black/50">
+        {article.shortDescription || null}
 
       </p>
 
       {/* AUTHOR SECTION */}
-      <div className="w-full flex border-l-6 pl-4 border-green-600 my-8 justify-between">
+      <div className="w-full flex  my-8 justify-between">
         <div className="text-gray-500 text-xs md:text-sm flex gap-1 md:gap-4 items-center">
           <img
             src={
@@ -297,7 +331,7 @@ export default function ReadArticlePage() {
           onClick={handleShare}
           className="h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition"
         >
-          <IoIosShareAlt size={18} />
+          <IoArrowRedoOutline className="text-gray-500" size={18} />
         </button>
       </div>
 
@@ -318,6 +352,7 @@ export default function ReadArticlePage() {
    
 
       <div className="w-full py-10">
+        <hr className="my-6 opacity-10"  />
         <p className="text-[22px] font-semibold tracking-tighter">
           Related Stories
         </p>

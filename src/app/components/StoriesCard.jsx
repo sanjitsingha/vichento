@@ -26,16 +26,16 @@ const StoriesCard = ({ post }) => {
         />
 
         <div className="py-2">
-          <p className="text-[20px] font-semibold leading-[24px]">
+          <p className="text-xl font-creato font-regular tracking-tight">
             {post.title}
           </p>
 
-          <p className="text-[14px] mt-2 text-gray-500 line-clamp-2">
+          <p className="text-xs mt-2 text-black/40 line-clamp-2">
             {HTMLReactParser(post.content)}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-2 mt-2">
           <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300">
             <img src={getAvatarUrl(post.authorAvatar)} alt="" />
           </div>
