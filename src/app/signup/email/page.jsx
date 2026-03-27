@@ -9,7 +9,7 @@ import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from "@heroicons/react/24/outlin
 
 // profession options
 
-const avatar = [
+const AVATARS = [
   "69c3b1190013e1c34def",
   "69c3b11400366576f43f",
   "69c3b1100001e28a6f53",
@@ -39,9 +39,9 @@ const professions = [
 ];
 
 
-// const getRandomAvatar = () => {
-//   return AVATARS[Math.floor(Math.random() * AVATARS.length)];
-// };
+const getRandomAvatar = () => {
+  return AVATARS[Math.floor(Math.random() * AVATARS.length)];
+};
 export default function EmailSignup() {
   const router = useRouter();
   const { setUser } = useAuthContext();
@@ -112,13 +112,13 @@ const handleSignupStep2 = async () => {
     setUser(session.user);
 
     // ✅ Assign RANDOM avatar (fileId)
-    const avatar = getRandomAvatar();
+const selectedAvatar = getRandomAvatar();
 
     // ✅ Save prefs
     await account.updatePrefs({
       dob,
       profession,
-      // avatar,
+      avatar:   selectedAvatar,
     });
 
     router.push("/");

@@ -8,6 +8,7 @@ import { account, storage } from "@/lib/appwrite";
 import { ID } from "@/lib/appwrite";
 import { logoutUser } from "@/lib/logout";
 import { useRouter } from "next/navigation";
+import { PencilIcon } from "@heroicons/react/24/outline";
 
 const Page = () => {
   const router = useRouter();
@@ -96,6 +97,7 @@ const Page = () => {
   const [displayNameModal, setDisplayNameModal] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [avatarModalOpen, setAvatarModalOpen] = useState(false);
 
   // form states
   const [newUsername, setNewUsername] = useState("");
@@ -115,12 +117,46 @@ const Page = () => {
   const [passLoading, setPassLoading] = useState(false);
   const [passMsg, setPassMsg] = useState(null);
 
+
+  const AVATARS = [
+    "69c3b1190013e1c34def",
+    "69c3b11400366576f43f",
+    "69c3b1100001e28a6f53",
+    "69c3b10b0017652ee857",
+    "69c3b105001867b3414e",
+    "69c3b0ff00156e6886a7",
+    "69c3b0f60016e5e370cd",
+    "69c3b0f00026e0b5d9e5",
+    "69c3b0e3002d6b4bc943",
+    "69c3b0de0017064e0a1e",
+    "69c3b0ce003aecbf2faa",
+    "69c3b0b90038fc4c6a8d",
+  ];
+
   // console.log(user); // Get details of Auth User
 
   const handleLogout = async () => {
     await logoutUser();
     setUser(null);
     router.refresh();
+  };
+  const handleSelectAvatar = async (avatarId) => {
+    try {
+      setAvatarUploading(true);
+
+      await account.updatePrefs({
+        ...(user.prefs || {}),
+        avatar: avatarId,
+      });
+
+      await refreshUser();
+      setAvatarModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update avatar");
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   // fill inputs when modal opens from existing user
@@ -343,32 +379,22 @@ const Page = () => {
 
   return (
     <div className="w-full">
-      <div className="w-full max-w-[800px] pt-10 mx-auto ">
+      <div className="w-full max-w-[800px] px-4 md:px-0 pt-10 mx-auto ">
         <div className="flex justify-between items-baseline">
           <h1 className="text-[32px] tracking-tighter font-medium">Profile</h1>
-          <div className="relative ">
+          <div className="relative">
             <img
               src={getAvatarUrl()}
               alt="Profile"
-              onClick={() => fileInputRef.current.click()}
-              className={`w-12 h-12 rounded-full ring-offset-4 border-2 border-red-600 p-[2px] object-cover cursor-pointer ${
-                avatarUploading ? "opacity-50" : ""
-              }`}
+              onClick={() => setAvatarModalOpen(true)}
+              className={`w-12 h-12 rounded-full border-2 border-red-600 p-[2px] object-cover cursor-pointer ${avatarUploading ? "opacity-50" : ""
+                }`}
             />
 
-            {avatarUploading && (
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] bg-black/40 text-white rounded-full">
-                Uploading
-              </span>
-            )}
-
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              ref={fileInputRef}
-              onChange={handleAvatarChange}
-            />
+            {/* ✏️ Pen Icon */}
+            <div className="absolute bottom-0 right-0 bg-black p-1 rounded-full">
+              <PencilIcon className="w-3 h-3 text-white" />
+            </div>
           </div>
         </div>
 
@@ -390,7 +416,7 @@ const Page = () => {
               onClick={() => setUsernameModalOpen(true)}
               className="underline cursor-pointer"
             >
-             <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+              <ArrowUpRightIcon className="w-4 h-4 inline" />
             </button>
           </div>
 
@@ -405,7 +431,7 @@ const Page = () => {
           >
             <p>Change Password</p>
             <p className="cursor-pointer underline">
-              <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+              <ArrowUpRightIcon className="w-4 h-4 inline" />
             </p>
           </div>
           <div
@@ -414,27 +440,27 @@ const Page = () => {
           >
             <p>Preferences</p>
             <p className="cursor-pointer underline">
-              <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+              <ArrowUpRightIcon className="w-4 h-4 inline" />
             </p>
           </div>
           <div className="flex items-center text-[14px]  justify-between text-black/60">
             <p>About</p>
             <button onClick={() => setBioModalOpen(true)} className=" cursor-pointer">
-                  <ArrowUpRightIcon className="w-4 h-4 inline" /> 
+              <ArrowUpRightIcon className="w-4 h-4 inline" />
             </button>
           </div>
-<hr className="my-10 opacity-20" />
+          <hr className="md:my-10 my-6 opacity-20" />
           <button
             onClick={() => {
               handleLogout();
             }}
-            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-200 border border-gray-300 py-5 px-4 rounded-lg "
+            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-200 border border-gray-300 md:py-5 py-2 px-4 rounded-lg "
           >
             <div>
-              <p className="text-red-500 text-[14px]">Logout</p>
-            <p className="text-[12px] text-black/60">
-              Permanently delete your account and all of your content.
-            </p>
+              <p className="text-red-500 md:text-[14px] text-sm">Logout</p>
+              <p className="md:text-[12px] text-xs text-black/50">
+                Permanently delete your account and all of your content.
+              </p>
             </div>
             <ArrowRightStartOnRectangleIcon className="w-6 h-6 ml-1 inline text-red-500" />
           </button>
@@ -450,7 +476,7 @@ const Page = () => {
           </button> */}
         </div>
         <div className="mt-8 w-full">
-          <h1 className="text-[16px] text-center  text-black/40">
+          <h1 className="md:text-[16px] text-sm text-center  text-black/40">
             Made with <span className="text-red-600">&#10084;</span>  <span >in India</span>
           </h1>
         </div>
@@ -470,9 +496,8 @@ const Page = () => {
 
         {displayMsg && (
           <p
-            className={`mt-2 text-sm ${
-              displayMsg.type === "error" ? "text-red-500" : "text-green-600"
-            }`}
+            className={`mt-2 text-sm ${displayMsg.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
           >
             {displayMsg.text}
           </p>
@@ -509,9 +534,8 @@ const Page = () => {
 
         {usernameMsg && (
           <p
-            className={`mt-2 text-sm ${
-              usernameMsg.type === "error" ? "text-red-500" : "text-green-600"
-            }`}
+            className={`mt-2 text-sm ${usernameMsg.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
           >
             {usernameMsg.text}
           </p>
@@ -548,9 +572,8 @@ const Page = () => {
 
         {bioMsg && (
           <p
-            className={`mt-2 text-sm ${
-              bioMsg.type === "error" ? "text-red-500" : "text-green-600"
-            }`}
+            className={`mt-2 text-sm ${bioMsg.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
           >
             {bioMsg.text}
           </p>
@@ -589,11 +612,10 @@ const Page = () => {
               <button
                 key={interest}
                 onClick={() => toggleInterest(interest)}
-                className={`px-4 py-1.5 rounded-full text-sm border transition ${
-                  isSelected
+                className={`px-4 py-1.5 rounded-full text-sm border transition ${isSelected
                     ? "bg-black text-white border-black"
                     : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 {interest}
               </button>
@@ -609,9 +631,8 @@ const Page = () => {
         {/* Message */}
         {prefMsg && (
           <p
-            className={`mt-2 text-sm ${
-              prefMsg.type === "error" ? "text-red-500" : "text-green-600"
-            }`}
+            className={`mt-2 text-sm ${prefMsg.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
           >
             {prefMsg.text}
           </p>
@@ -657,9 +678,8 @@ const Page = () => {
 
         {passMsg && (
           <p
-            className={`mt-2 text-sm ${
-              passMsg.type === "error" ? "text-red-500" : "text-green-600"
-            }`}
+            className={`mt-2 text-sm ${passMsg.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
           >
             {passMsg.text}
           </p>
@@ -705,6 +725,44 @@ const Page = () => {
             Delete
           </button>
         </div>
+      </Modal>
+      <Modal open={avatarModalOpen} onOpenChange={setAvatarModalOpen}>
+        <h2 className="text-[16px] mb-4">Choose Avatar</h2>
+
+        {/* Avatar Grid */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          {AVATARS.map((id) => (
+            <img
+              key={id}
+              src={storage.getFileView("article-images", id)}
+              className={`w-14 h-14 rounded-full cursor-pointer border hover:scale-105 transition ${avatarUploading ? "pointer-events-none opacity-50" : ""
+                }`}
+              onClick={() => handleSelectAvatar(id)}
+            />
+          ))}
+        </div>
+
+        {/* OR Divider */}
+        <div className="text-center text-xs text-gray-400 mb-2">OR</div>
+
+        {/* Upload Option */}
+        <button
+          onClick={() => {
+            if (!avatarUploading) fileInputRef.current.click();
+          }}
+          disabled={avatarUploading}
+          className="w-full bg-black text-white py-2 rounded disabled:opacity-60"
+        >
+          {avatarUploading ? "Uploading..." : "Select from Gallery"}
+        </button>
+
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          ref={fileInputRef}
+          onChange={handleAvatarChange}
+        />
       </Modal>
     </div>
   );
