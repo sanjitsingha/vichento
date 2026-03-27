@@ -20,6 +20,7 @@ export default function WritePage() {
   const { user } = useAuthContext();
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [shortDescription, setshortdescription] = useState("")
   const [content, setContent] = useState("");
   const editor = useRef(null);
 
@@ -95,6 +96,7 @@ export default function WritePage() {
         {
           title: title || "Untitled draft",
           content,
+          shortDescription: shortDescription || "",
           authorId: user.$id,
           featuredImage: featuredImage || "",
           categories: selectedCategories,
@@ -128,6 +130,7 @@ export default function WritePage() {
           title: title || "Untitled article",
           featuredImage: featuredImage || "",
           content,
+           shortDescription: shortDescription || "",
           authorId: user.$id,
           authorName: user.name || "Anonymous",
           authorAvatar: user.prefs.avatar || null,
@@ -201,7 +204,7 @@ export default function WritePage() {
             onChange={(e) => setTitle(e.target.value)}
           />
 
-          <div className="w-full rounded-sm mb-6 bg-gray-100 flex justify-center items-center h-80 border border-gray-300 relative overflow-hidden">
+          <div className="w-full rounded-sm mb-8 bg-gray-100 flex justify-center items-center h-80 border border-gray-300 relative overflow-hidden">
             {!featuredImageUrl ? (
               <>
                 <button onClick={() => fileInputRef.current.click()}>
@@ -241,6 +244,10 @@ export default function WritePage() {
                 />
               </>
             )}
+          </div>
+
+          <div className="w-full mb-8"> 
+          <input onChange={(e)=>setshortdescription(e.target.value)} type="textarea" placeholder="Write a short description    (optional)" className="w-full font-creato   outline-none " />
           </div>
 
           <JoditEditor
