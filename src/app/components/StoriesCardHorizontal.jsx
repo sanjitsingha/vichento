@@ -48,10 +48,10 @@ export default function StoriesCardHorizontal({
           <div className="flex-1">
             <h2
               className="
-    text-lg md:text-xl
-    font-medium md:font-semibold
-    leading-6 md:leading-tight
-    md:tracking-tight
+    text-[16px] md:text-[22px]
+  
+    
+    font-creato 
     line-clamp-2 md:line-clamp-none
   "
             >
@@ -74,22 +74,22 @@ export default function StoriesCardHorizontal({
 
       {/* Actions */}
       <div className="flex gap-8 mt-2 text-gray-500">
-       <button
-  onClick={() => onLike(article.$id)} // later rename to onSpark
-  className="cursor-pointer transition-transform active:scale-95"
-  title="Spark this post"
->
-  {isLiked ? (
-    <PiSparkleFill size={20} className="text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
-  ) : (
-    <PiSparkle
-      size={20}
-      className="text-gray-500 hover:text-yellow-400 transition-colors"
-    />
-  )}
-</button>
+        <button
+          onClick={() => onLike(article.$id)} // later rename to onSpark
+          className="cursor-pointer transition-transform active:scale-95"
+          title="Spark this post"
+        >
+          {isLiked ? (
+            <PiSparkleFill size={20} className="text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
+          ) : (
+            <PiSparkle
+              size={20}
+              className="text-gray-500 hover:text-yellow-400 transition-colors"
+            />
+          )}
+        </button>
 
-       
+
 
         <button
           onClick={() => onBookmark(article.$id)}

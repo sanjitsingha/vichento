@@ -91,7 +91,7 @@ const Page = () => {
     <div className="w-full">
       <div className="max-w-[800px] mx-auto pt-10">
         <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
-          <p className="text-[22px] font-semibold">Reading List</p>
+          <p className="text-[24px] tracking-tight font-creato">Reading List</p>
           <IoBookmark className="text-gray-500" size={22}/>
         </div>
 

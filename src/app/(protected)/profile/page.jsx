@@ -381,7 +381,7 @@ const Page = () => {
     <div className="w-full">
       <div className="w-full max-w-[800px] px-4 md:px-0 pt-10 mx-auto ">
         <div className="flex justify-between items-baseline">
-          <h1 className="text-[32px] tracking-tighter font-medium">Profile</h1>
+          <h1 className="text-[24px] tracking-tight font-creato">Profile</h1>
           <div className="relative">
             <img
               src={getAvatarUrl()}
@@ -454,7 +454,7 @@ const Page = () => {
             onClick={() => {
               handleLogout();
             }}
-            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-200 border border-gray-300 md:py-5 py-2 px-4 rounded-lg "
+            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-100 border border-gray-300 md:py-5 py-2 px-4 rounded-lg "
           >
             <div>
               <p className="text-red-500 md:text-[14px] text-sm">Logout</p>

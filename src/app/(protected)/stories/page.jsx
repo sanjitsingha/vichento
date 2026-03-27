@@ -115,7 +115,7 @@ const page = () => {
   return (
     <div className="w-full">
       <div className="max-w-[800px] mx-auto pt-10">
-        <p className="text-[32px] tracking-tighter font-medium">Stories</p>
+        <p className="text-[24px] tracking-tight font-creato">Stories</p>
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200 flex gap-6">
