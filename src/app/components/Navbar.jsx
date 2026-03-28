@@ -11,7 +11,7 @@ import Image from "next/image";
 import { MdArrowOutward } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { HiMenuAlt2, HiX } from "react-icons/hi";
-import { PencilSquareIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import {
   HomeIcon,
   UserIcon,
@@ -111,6 +111,10 @@ const Navbar = () => {
 
             {!loading && user && (
               <>
+              {/* <Link href={"/report-bug"} className="hidden md:flex items-center py-1 gap-2 border px-4 rounded bg-yellow-100 border-yellow-300 text-sm">
+               <ExclamationTriangleIcon className="size-5 text-yellow-700" />
+                <p className="font-creato text-yellow-700">Report Bug</p>
+              </Link> */}
                 <Link
                   href="/write"
                   className="hidden md:flex items-center gap-2 border-r pr-6 border-gray-300 text-sm"
