@@ -31,6 +31,7 @@ export default function RootLayout({ children }) {
           <Navbar />
           {children}
         </AuthProvider>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="33d6e7f4-19cf-43b9-89d7-77bdb3f20200"></script>
       </body>
     </html>
   );
