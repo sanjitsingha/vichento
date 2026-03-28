@@ -45,24 +45,33 @@ export default function ReadArticlePage() {
     if (!slug) return;
 
     const fetchArticle = async () => {
-      try {
-        const res = await databases.listDocuments(
-          DATABASE_ID,
-          ARTICLES_COLLECTION,
-          [Query.equal("slug", [slug])],
-        );
+  try {
+    const res = await databases.listDocuments(
+      DATABASE_ID,
+      ARTICLES_COLLECTION,
+      [Query.equal("slug", [slug])]
+    );
 
-        if (!res.documents.length) return;
+    if (!res.documents.length) return;
 
-        const doc = res.documents[0];
-        setArticle(doc);
-        setLikesCount(doc.likes || 0);
-      } catch (err) {
-        console.error("Fetch article failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const doc = res.documents[0];
+    setArticle(doc);
+
+    // ✅ FIX: fetch real likes count
+    const likesRes = await databases.listDocuments(
+      DATABASE_ID,
+      "article_likes",
+      [Query.equal("articleId", [doc.$id])]
+    );
+
+    setLikesCount(likesRes.total);
+
+  } catch (err) {
+    console.error("Fetch article failed:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchArticle();
   }, [slug]);
