@@ -268,11 +268,11 @@ if (loading) {
         <p className="text-gray-500">Advertisment Area</p>
       </div> */}
 
-      <h1 className=" text-2xl  md:text-[30px] font-creato tracking-tight pt-6 leading-tight">
+      <h1 className=" text-2xl font-semibold  md:text-[34px] font-creato tracking-tight pt-18 leading-tight">
         {article.title}
       </h1>
       {/* short description optional */}
-      <p className="text-xs md:text-base mt-5 text-black/50">
+      <p className="text-xs md:text-xl tracking-wide font-creato mt-5 text-black/60">
         {article.shortDescription || null}
 
       </p>
@@ -293,7 +293,7 @@ if (loading) {
           <p>{isAuthor ? user.name : article.authorName || "Admin"}</p>
 
           <p>{new Date(article.$createdAt).toDateString()}</p>
-          <p>{article.readTime} min read</p>
+          {/* <p>{article.readTime} min read</p> */}
         </div>
 
         <button className="cursor-pointer" onClick={toggleBookmark}>
@@ -338,12 +338,12 @@ if (loading) {
       {imageUrl && (
         <img
           src={imageUrl}
-          className="w-full my-8 rounded"
+          className="w-full my-8 rounded object-cover"
           alt={article.title}
         />
       )}
 
-      <div className="prose prose-lg max-w-none text-[14px] md:text-[20px] leading-relaxed">
+      <div className="prose font-serif prose-lg max-w-none text-[14px] md:text-[20px] ">
         {HTMLReactParser(article.content)}
       </div>
 

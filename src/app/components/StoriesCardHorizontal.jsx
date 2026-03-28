@@ -48,7 +48,7 @@ export default function StoriesCardHorizontal({
           <div className="flex-1">
             <h2
               className="
-    text-[16px] md:text-[22px]
+    text-[16px] md:text-[22px] font-semibold
   
     
     font-creato 
