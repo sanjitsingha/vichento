@@ -83,7 +83,7 @@ const getAvatarUrl = (fileId) => {
 
   return (
     <div className="w-full">
-      <p className="font-semibold mb-4">Your Reading List</p>
+      <p className="font-semibold mb-4 text-black font-creato">Your Reading List</p>
 
       <div className="flex flex-col gap-6">
         {articles.map((article) => {
@@ -123,7 +123,7 @@ const getAvatarUrl = (fileId) => {
                   </p>
                 </div>
 
-                <p className="text-[14px] mt-2 font-medium">
+                <p className="text-[14px] mt-2 text-black    font-medium">
                   {truncateText(article.title, 30)}
                 </p>
               </div>
