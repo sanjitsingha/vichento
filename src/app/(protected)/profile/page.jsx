@@ -381,7 +381,7 @@ const Page = () => {
     <div className="w-full">
       <div className="w-full max-w-[800px] px-4 md:px-0 pt-10 mx-auto ">
         <div className="flex justify-between items-baseline">
-          <h1 className="text-[24px] tracking-tight font-creato">Profile</h1>
+          <h1 className="text-[24px] text-black tracking-tight font-creato">Profile</h1>
           <div className="relative">
             <img
               src={getAvatarUrl()}
@@ -398,7 +398,7 @@ const Page = () => {
           </div>
         </div>
 
-        <hr className="mb-4 mt-2 opacity-20" />
+        <hr className="mb-4 text-black mt-2 opacity-20" />
         <div className="w-full flex flex-col mt-10 gap-6">
           <div className="flex items-center text-[14px] justify-between text-black/60">
             <p>Display Name</p>
@@ -484,11 +484,11 @@ const Page = () => {
 
       {/* ---------- Display Name Modal ---------- */}
       <Modal open={displayNameModal} onOpenChange={setDisplayNameModal}>
-        <h2 className="text-[16px] mb-4">Display Name</h2>
+        <h2 className="text-[16px] font-creato text-black mb-4">Display Name</h2>
 
         <input
           placeholder="New Display Name"
-          className="outline-none px-2 w-full bg-gray-200 text-[14px] py-2 rounded"
+          className="outline-none px-2 font-creato w-full border-b border-gray-300 text-black text-[14px] py-1 "
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
@@ -503,17 +503,17 @@ const Page = () => {
           </p>
         )}
 
-        <div className="flex gap-2 mt-4 justify-end">
+        <div className="flex gap-4 mt-4 justify-end">
           <button
             onClick={() => setDisplayNameModal(false)}
-            className="px-4 py-1 rounded"
+            className="px-4 border border-gray-400 py-1 text-black rounded-full"
           >
             Cancel
           </button>
           <button
             onClick={handleUpdateDisplayName}
             disabled={displayLoading}
-            className="px-4 py-1 bg-black text-white rounded"
+            className="px-4 py-1 bg-black text-white rounded-full"
           >
             {displayLoading ? "Saving..." : "Confirm"}
           </button>
@@ -522,12 +522,12 @@ const Page = () => {
 
       {/* ---------- Username Modal ---------- */}
       <Modal open={usernameModalOpen} onOpenChange={setUsernameModalOpen}>
-        <h2 className="text-[16px] mb-4">Change Username</h2>
-
+        <h2 className="text-[16px] text-black font-creato mb-4">Change Username</h2>
+ 
         <input
           type="text"
           placeholder="@newusername"
-          className="bg-gray-200 outline-none p-2 w-full rounded-md"
+          className="border-b border-gray-300 outline-none p-2 w-full font-creato text-black text-[14px]"
           value={newUsername}
           onChange={(e) => setNewUsername(e.target.value)}
         />

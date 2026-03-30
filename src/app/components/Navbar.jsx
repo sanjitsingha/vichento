@@ -42,7 +42,7 @@ const Navbar = () => {
   return (
     <>
       {/* ================= NAVBAR ================= */}
-      <div className="w-full border-b border-gray-300 h-[64px] sticky top-0 z-50 bg-white">
+      <div className="w-full border-b border-gray-300 h-[64px] sticky top-0 z-50  bg-white">
         <div className="px-4 md:px-10 h-full flex justify-between items-center">
           {/* LEFT */}
           <div className="flex items-center gap-3">
@@ -81,9 +81,9 @@ const Navbar = () => {
                     }
                   }}
                   placeholder="Search topics"
-                  className="outline-none text-sm w-[260px] bg-gray-100 py-2 px-3 rounded-full"
+                  className="outline-none text-sm w-[260px] text-black bg-gray-200 py-2 px-3 rounded-full"
                 />
-                <CiSearch className="absolute right-3" size={18} />
+                <CiSearch className="absolute right-3" color="black" size={18} />
               </div>
             )}
           </div>

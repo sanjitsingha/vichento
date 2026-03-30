@@ -50,7 +50,7 @@ export default function StoriesCardHorizontal({
         <div className="flex gap-2 mt-2 cursor-pointer">
           <div className="flex-1">
             <h2
-              className="
+              className=" dark:text-black text-black
     text-[16px] md:text-[22px] font-semibold
   
     

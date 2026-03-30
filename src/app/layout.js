@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "./components/Navbar";
+import ThemeProvider from "@/lib/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,10 +28,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider>
         <AuthProvider>
           <Navbar />
           {children}
         </AuthProvider>
+        </ThemeProvider>
         <script defer src="https://cloud.umami.is/script.js" data-website-id="33d6e7f4-19cf-43b9-89d7-77bdb3f20200"></script>
       </body>
     </html>

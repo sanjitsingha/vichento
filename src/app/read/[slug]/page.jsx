@@ -279,7 +279,7 @@ export default function ReadArticlePage() {
         <p className="text-gray-500">Advertisment Area</p>
       </div> */}
 
-      <h1 className=" text-2xl font-semibold  md:text-[34px] font-creato tracking-tight md:pt-18 pt-8 leading-tight">
+      <h1 className=" text-2xl font-semibold  md:text-[34px] text-black dark:text-white font-creato tracking-tight md:pt-18 pt-8 leading-tight">
         {article.title}
       </h1>
       {/* short description optional */}
@@ -354,7 +354,7 @@ export default function ReadArticlePage() {
         />
       )}
 
-      <div className="prose font-serif prose-lg max-w-none text-[18px] md:text-[22px] ">
+      <div className="prose font-serif prose-lg text-black dark:text-white max-w-none text-[18px] md:text-[22px]">
         {HTMLReactParser(article.content)}
       </div>
 
@@ -364,7 +364,7 @@ export default function ReadArticlePage() {
 
       <div className="w-full py-10">
         <hr className="my-6 opacity-10" />
-        <p className="text-[22px] font-semibold tracking-tighter">
+        <p className="text-[22px] text-black dark:text-white font-semibold tracking-tighter">
           Related Stories
         </p>
         <RelatedArticles
