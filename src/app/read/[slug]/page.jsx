@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PiThumbsUp } from "react-icons/pi";
+import { PiThumbsUpFill } from "react-icons/pi";
 import { useParams } from "next/navigation";
 import { databases, storage, ID } from "@/lib/appwrite";
 import { Query, Permission, Role } from "appwrite";
@@ -45,33 +47,33 @@ export default function ReadArticlePage() {
     if (!slug) return;
 
     const fetchArticle = async () => {
-  try {
-    const res = await databases.listDocuments(
-      DATABASE_ID,
-      ARTICLES_COLLECTION,
-      [Query.equal("slug", [slug])]
-    );
+      try {
+        const res = await databases.listDocuments(
+          DATABASE_ID,
+          ARTICLES_COLLECTION,
+          [Query.equal("slug", [slug])]
+        );
 
-    if (!res.documents.length) return;
+        if (!res.documents.length) return;
 
-    const doc = res.documents[0];
-    setArticle(doc);
+        const doc = res.documents[0];
+        setArticle(doc);
 
-    // ✅ FIX: fetch real likes count
-    const likesRes = await databases.listDocuments(
-      DATABASE_ID,
-      "article_likes",
-      [Query.equal("articleId", [doc.$id])]
-    );
+        // ✅ FIX: fetch real likes count
+        const likesRes = await databases.listDocuments(
+          DATABASE_ID,
+          "article_likes",
+          [Query.equal("articleId", [doc.$id])]
+        );
 
-    setLikesCount(likesRes.total);
+        setLikesCount(likesRes.total);
 
-  } catch (err) {
-    console.error("Fetch article failed:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      } catch (err) {
+        console.error("Fetch article failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchArticle();
   }, [slug]);
@@ -232,39 +234,39 @@ export default function ReadArticlePage() {
   };
 
   /* ---------------- RENDER ---------------- */
-if (loading) {
-  return (
-    <div className="max-w-[800px] mx-auto p-4 animate-pulse">
-      
-      {/* Title */}
-      <div className="h-8 bg-gray-300 rounded w-3/4 mt-6"></div>
-      <div className="h-8 bg-gray-300 rounded w-1/2 mt-2"></div>
+  if (loading) {
+    return (
+      <div className="max-w-[800px] mx-auto p-4 animate-pulse">
 
-      {/* Description */}
-      <div className="h-4 bg-gray-300 rounded w-full mt-6"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6 mt-2"></div>
+        {/* Title */}
+        <div className="h-8 bg-gray-300 rounded w-3/4 mt-6"></div>
+        <div className="h-8 bg-gray-300 rounded w-1/2 mt-2"></div>
 
-      {/* Author */}
-      <div className="flex items-center gap-3 mt-8">
-        <div className="w-6 h-6 rounded-full bg-gray-300"></div>
-        <div className="h-4 bg-gray-300 rounded w-24"></div>
-        <div className="h-4 bg-gray-300 rounded w-20"></div>
+        {/* Description */}
+        <div className="h-4 bg-gray-300 rounded w-full mt-6"></div>
+        <div className="h-4 bg-gray-300 rounded w-5/6 mt-2"></div>
+
+        {/* Author */}
+        <div className="flex items-center gap-3 mt-8">
+          <div className="w-6 h-6 rounded-full bg-gray-300"></div>
+          <div className="h-4 bg-gray-300 rounded w-24"></div>
+          <div className="h-4 bg-gray-300 rounded w-20"></div>
+        </div>
+
+        {/* Image */}
+        <div className="w-full h-[200px] bg-gray-300 rounded mt-8"></div>
+
+        {/* Content lines */}
+        <div className="mt-8 space-y-3">
+          <div className="h-4 bg-gray-300 rounded w-full"></div>
+          <div className="h-4 bg-gray-300 rounded w-11/12"></div>
+          <div className="h-4 bg-gray-300 rounded w-10/12"></div>
+          <div className="h-4 bg-gray-300 rounded w-9/12"></div>
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+        </div>
       </div>
-
-      {/* Image */}
-      <div className="w-full h-[200px] bg-gray-300 rounded mt-8"></div>
-
-      {/* Content lines */}
-      <div className="mt-8 space-y-3">
-        <div className="h-4 bg-gray-300 rounded w-full"></div>
-        <div className="h-4 bg-gray-300 rounded w-11/12"></div>
-        <div className="h-4 bg-gray-300 rounded w-10/12"></div>
-        <div className="h-4 bg-gray-300 rounded w-9/12"></div>
-        <div className="h-4 bg-gray-200 rounded w-full"></div>
-      </div>
-    </div>
-  );
-}
+    );
+  }
   if (!article) return <p className="text-center mt-20">Article not found</p>;
 
   const imageUrl = article.featuredImage
@@ -277,7 +279,7 @@ if (loading) {
         <p className="text-gray-500">Advertisment Area</p>
       </div> */}
 
-      <h1 className=" text-2xl font-semibold  md:text-[34px] font-creato tracking-tight pt-18 leading-tight">
+      <h1 className=" text-2xl font-semibold  md:text-[34px] font-creato tracking-tight md:pt-18 pt-8 leading-tight">
         {article.title}
       </h1>
       {/* short description optional */}
@@ -287,7 +289,7 @@ if (loading) {
       </p>
 
       {/* AUTHOR SECTION */}
-      <div className="w-full flex  my-8 justify-between">
+      <div className="w-full flex flex-col md:flex-row  gap-3 md:gap-0  my-8 md:justify-between md:items-center ">
         <div className="text-gray-500 text-xs md:text-sm flex gap-1 md:gap-4 items-center">
           <img
             src={
@@ -304,50 +306,50 @@ if (loading) {
           <p>{new Date(article.$createdAt).toDateString()}</p>
           {/* <p>{article.readTime} min read</p> */}
         </div>
+        <div className="flex items-center gap-8">
 
-        <button className="cursor-pointer" onClick={toggleBookmark}>
-          {isBookmarked ? (
-            <IoBookmark size={18} className="text-green-700" />
-          ) : (
-            <IoBookmarkOutline
-              size={18}
-              className="text-gray-500 hover:text-green-700"
-            />
-          )}
-        </button>
-      </div>
-      {/* LIKE / SHARE */}
-      <div className="mt-10 flex justify-between gap-8">
-        <div className="flex items-center gap-2">
-           <button
-            onClick={() => toggleLike(article.$id)} // later rename to onSpark
-            className="cursor-pointer transition-transform active:scale-95"
-            title="Spark this post"
-          >
-            {isLiked ? (
-              <PiSparkleFill size={20} className="text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleLike(article.$id)} // later rename to onSpark
+              className="cursor-pointer transition-transform active:scale-95"
+              title="Spark this post"
+            >
+              {isLiked ? (
+                <PiThumbsUpFill size={20} className="text-black" />
+              ) : (
+                <PiThumbsUp
+                  size={20}
+                  className="text-gray-500 hover:text-black transition-colors"
+                />
+              )}
+            </button>
+            <span className="text-sm text-gray-500">{likesCount}</span>
+          </div>
+          <button className="cursor-pointer" onClick={toggleBookmark}>
+            {isBookmarked ? (
+              <IoBookmark size={18} className="text-black" />
             ) : (
-              <PiSparkle
-                size={20}
-                className="text-gray-500 hover:text-yellow-400 transition-colors"
+              <IoBookmarkOutline
+                size={18}
+                className="text-gray-500 hover:text-black"
               />
             )}
           </button>
-          <span className="text-sm text-gray-500">{likesCount}</span>
+          <button
+            onClick={handleShare}
+            className="h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition"
+          >
+            <IoArrowRedoOutline className="text-gray-500" size={18} />
+          </button>
         </div>
-
-        <button
-          onClick={handleShare}
-          className="h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition"
-        >
-          <IoArrowRedoOutline className="text-gray-500" size={18} />
-        </button>
       </div>
+
 
       {imageUrl && (
         <img
           src={imageUrl}
-          className="w-full my-8 rounded object-cover"
+          className="w-full h-full my-1 rounded object-cover"
           alt={article.title}
         />
       )}
@@ -356,12 +358,12 @@ if (loading) {
         {HTMLReactParser(article.content)}
       </div>
 
-      
 
-   
+
+
 
       <div className="w-full py-10">
-        <hr className="my-6 opacity-10"  />
+        <hr className="my-6 opacity-10" />
         <p className="text-[22px] font-semibold tracking-tighter">
           Related Stories
         </p>

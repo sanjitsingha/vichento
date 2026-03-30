@@ -1,6 +1,6 @@
+"use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { IoBookmarkOutline } from "react-icons/io5";
 import { databases, storage } from "@/lib/appwrite";
 import { Query } from "appwrite";
 import { useAuthContext } from "@/context/AuthContext";
@@ -9,20 +9,26 @@ import Image from "next/image";
 const DATABASE_ID = "693d3d220017a846a1c0";
 const BOOKMARKS_COLLECTION = "article_bookmarks";
 const ARTICLES_COLLECTION = "articles";
+const BUCKET_ID = "article-images";
 
-const YourReadingLIst = ({refreshKey}) => {
+const YourReadingLIst = ({ refreshKey }) => {
   const { user } = useAuthContext();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // console.log(user)
+  // ✅ Strong cache-busting (important)
+const getAvatarUrl = (fileId) => {
+  if (!fileId) return "/default-avatar.png";
+  const url = new URL(storage.getFileView(BUCKET_ID, fileId).toString());
+  url.searchParams.set("v", Date.now());
+  return url.toString();
+};
 
   useEffect(() => {
     if (!user?.$id) return;
 
     const fetchBookmarks = async () => {
       try {
-        // 1️⃣ Fetch bookmarks
         const bookmarksRes = await databases.listDocuments(
           DATABASE_ID,
           BOOKMARKS_COLLECTION,
@@ -35,10 +41,10 @@ const YourReadingLIst = ({refreshKey}) => {
           return;
         }
 
-        const articleIds = bookmarksRes.documents.map((doc) => doc.articleId);
-        // console.log(articleIds) // IM GETTING RESPONSE
+        const articleIds = bookmarksRes.documents.map(
+          (doc) => doc.articleId
+        );
 
-        // 2️⃣ Fetch articles
         const articlesRes = await databases.listDocuments(
           DATABASE_ID,
           ARTICLES_COLLECTION,
@@ -59,6 +65,7 @@ const YourReadingLIst = ({refreshKey}) => {
 
     fetchBookmarks();
   }, [user?.$id, refreshKey]);
+
   if (loading) {
     return <p className="text-sm text-gray-500">Loading bookmarks…</p>;
   }
@@ -68,16 +75,10 @@ const YourReadingLIst = ({refreshKey}) => {
   }
 
   const truncateText = (text, maxLength = 50) => {
-  if (!text) return "";
-  return text.length > maxLength
-    ? text.slice(0, maxLength) + "…"
-    : text;
-};
-  console.log(articles);
-
-  const getAvatarUrl = (fileId) => {
-    if (!fileId) return "/default-avatar.png";
-    return storage.getFileView("article-images", fileId);
+    if (!text) return "";
+    return text.length > maxLength
+      ? text.slice(0, maxLength) + "…"
+      : text;
   };
 
   return (
@@ -88,9 +89,20 @@ const YourReadingLIst = ({refreshKey}) => {
         {articles.map((article) => {
           const imageUrl = article.featuredImage
             ? storage
-                .getFileView("article-images", article.featuredImage)
+                .getFileView(BUCKET_ID, article.featuredImage)
                 .toString()
             : null;
+
+          // ✅ FINAL AVATAR LOGIC
+          let avatarUrl;
+
+          if (user?.$id === article.authorId && user?.prefs?.avatar) {
+            // your own article → always latest
+            avatarUrl = getAvatarUrl(user.prefs.avatar);
+          } else {
+            // others → fallback + force refresh
+            avatarUrl = getAvatarUrl(article.authorAvatar);
+          }
 
           return (
             <Link
@@ -99,16 +111,21 @@ const YourReadingLIst = ({refreshKey}) => {
               className="flex gap-12 items-center"
             >
               <div className="flex-1">
-                <div className="w-full flex gap-2 ">
+                <div className="w-full flex gap-2">
                   <div className="w-6 h-6 rounded-full overflow-hidden">
-                    <img src={getAvatarUrl(article.authorAvatar)} />
+                    <img src={avatarUrl} alt="" />
                   </div>
-                  <p className="text-sm text-gray-500">{article.authorName}</p>
+
+                  <p className="text-sm text-gray-500">
+                    {user?.$id === article.authorId
+                      ? user.name
+                      : article.authorName}
+                  </p>
                 </div>
-                <p className="text-[14px] mt-2 font-medium"> {truncateText(article.title, 30)}</p>
-                {/* <p className="text-[10px] text-gray-500 mt-1">
-                  {new Date(article.$createdAt).toDateString()}
-                </p> */}
+
+                <p className="text-[14px] mt-2 font-medium">
+                  {truncateText(article.title, 30)}
+                </p>
               </div>
 
               {imageUrl && (
@@ -124,6 +141,7 @@ const YourReadingLIst = ({refreshKey}) => {
           );
         })}
       </div>
+
       <div className="w-full mt-6 border-t border-gray-300/80 pt-3">
         <Link
           href="/library"

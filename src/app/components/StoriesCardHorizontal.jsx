@@ -1,6 +1,8 @@
 "use client";
 import { PiSparkle } from "react-icons/pi";
 import { PiSparkleFill } from "react-icons/pi";
+import { PiThumbsUp } from "react-icons/pi";
+import { PiThumbsUpFill } from "react-icons/pi";
 import Link from "next/link";
 import { RiFireLine } from "react-icons/ri";
 import { storage } from "@/lib/appwrite";
@@ -10,6 +12,7 @@ import { IoBookmark } from "react-icons/io5";
 import { databases } from "@/lib/appwrite";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
+import { HandThumbUpIcon } from "@heroicons/react/24/outline";
 const BUCKET_ID = "article-images";
 export default function StoriesCardHorizontal({
   article,
@@ -80,11 +83,11 @@ export default function StoriesCardHorizontal({
           title="Spark this post"
         >
           {isLiked ? (
-            <PiSparkleFill size={20} className="text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" />
+            <PiThumbsUpFill size={20} className="text-black " />
           ) : (
-            <PiSparkle
+            <PiThumbsUp
               size={20}
-              className="text-gray-500 hover:text-yellow-400 transition-colors"
+              className="text-gray-500 hover:text-black transition-colors"
             />
           )}
         </button>
@@ -96,9 +99,9 @@ export default function StoriesCardHorizontal({
           className="cursor-pointer"
         >
           {isBookmarked ? (
-            <IoBookmark size={18} className="text-green-700" />
+            <IoBookmark size={18} className="text-black" />
           ) : (
-            <IoBookmarkOutline size={18} className="text-gray-500 hover:text-green-700" />
+            <IoBookmarkOutline size={18} className="text-gray-500 hover:text-black" />
           )}
         </button>
       </div>
