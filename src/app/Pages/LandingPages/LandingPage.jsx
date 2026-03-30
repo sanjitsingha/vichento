@@ -14,7 +14,7 @@ const LandingPage = () => {
         <div className="flex-1 flex flex-col justify-center pt-10 md:pt-20">
           <p
             className="
-            text-[40px] leading-[45px]
+            text-[40px] font-creato text-black leading-[45px]
             md:text-[60px] md:leading-[65px]
             lg:text-[90px] lg:leading-[95px]
             font-semibold
@@ -23,7 +23,7 @@ const LandingPage = () => {
             Built on <br /> stories & ideas
           </p>
 
-          <p className="text-[16px] md:text-[18px] lg:text-[20px] mt-6 lg:mt-10 text-gray-700">
+          <p className="text-[16px] md:text-[18px] font-creato lg:text-[20px] mt-6 lg:mt-10 text-gray-700">
             A space for thoughtful reading and meaningful writing
           </p>
 
@@ -35,7 +35,7 @@ const LandingPage = () => {
               rounded-full
               text-sm md:text-base
             "
-            href={"/"}
+            href={"/signin"}
           >
             Start Reading
           </Link>

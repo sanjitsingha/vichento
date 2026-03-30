@@ -15,7 +15,7 @@ export default function GoogleSignInButton() {
   return (
     <button
       onClick={handleGoogleLogin}
-      className="border px-4 py-2 cursor-pointer  w-[280px] justify-center rounded-full flex items-center gap-2"
+      className="border px-4 py-2 cursor-pointer text-black w-[280px] justify-center rounded-full flex items-center gap-2"
     >
       <FcGoogle size={24} />
       Continue with Google

@@ -6,6 +6,7 @@ import { account } from "@/lib/appwrite";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 
 export default function EmailLogin() {
   const router = useRouter();
@@ -38,20 +39,21 @@ export default function EmailLogin() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center px-6">
-      <h1 className="text-2xl mb-6">Sign in with email</h1>
+    <div className="w-full h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6">
+      <Image width={60} height={60} alt="logo" src={'/logo.png'}/>
+      <h1 className="text-2xl text-black font-creato tracking-tight my-10">Sign in with email</h1>
 
       <form
         className="w-full max-w-[300px] flex flex-col"
         onSubmit={handleLogin}
       >
         {/* EMAIL INPUT */}
-        <label className='block text-xs font-medium mt-10 text-gray-700' htmlFor='email'>Email</label>
+        <label className='block text-xs font-medium  text-gray-700' htmlFor='email'>Email</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
+          className="placeholder:text-xs w-full text-black placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
           required
         />
 
@@ -62,7 +64,7 @@ export default function EmailLogin() {
             type={showPassword ? "text" : "password"}
             value={pass}
             onChange={(e) => setPass(e.target.value)}
-            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
+            className="placeholder:text-xs w-full text-black placeholder:text-black placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
             required
           />
 
@@ -89,14 +91,17 @@ export default function EmailLogin() {
         {/* SUBMIT BUTTON */}
         <button
           disabled={loading}
-          className="bg-black cursor-pointer text-white rounded-full py-2 mt-6 disabled:opacity-60"
+          className="bg-black cursor-pointer text-white rounded-full py-2 mt-10 disabled:opacity-60"
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 
-      <Link href="/signin" className="mt-4 underline text-sm">
+      <Link href="/signin" className="mt-4 text-black/50 underline text-sm">
         Go back
+      </Link>
+      <Link href="/forgot-password" className="mt-4 text-black/50  text-sm">
+        Having problem logging in?
       </Link>
     </div>
   );

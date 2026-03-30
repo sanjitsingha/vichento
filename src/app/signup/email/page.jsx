@@ -6,6 +6,7 @@ import { account, ID } from "@/lib/appwrite";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 
 // profession options
 
@@ -138,7 +139,8 @@ export default function EmailSignup() {
       {/* --------------------- STEP 1 UI --------------------- */}
       {step === 1 && (
         <>
-          <h1 className='text-3xl font-semibold tracking-tighter align-start'>Create your account</h1>
+            <Image width={60} height={60} alt="logo" src={'/logo.png'}/>
+          <h1 className='text-2xl mt-10 text-black font-creato  tracking-tight align-start'>Create your account</h1>
           <p className='text-sm mt-2 text-black/60 text-center mb-10'>It only takes a moment to get started with your account.</p>
 
           <form
@@ -152,7 +154,7 @@ export default function EmailSignup() {
               placeholder="johndoe@hotmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="font-semibold placeholder:text-gray-500 placeholder:text-xs placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1  "
+              className="font-semibold placeholder:text-gray-500 text-black placeholder:text-xs placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1  "
               required
             />
 
@@ -165,7 +167,7 @@ export default function EmailSignup() {
                 placeholder="123***"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                className="font-semibold placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
+                className="font-semibold placeholder:text-xs w-full text-black placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
                 required
               />
 
@@ -199,7 +201,7 @@ export default function EmailSignup() {
             </button>
           </form>
 
-          <Link href="/signup" className="mt-6  cursor-pointer underline text-sm">
+          <Link href="/signup" className="mt-6 text-black/50  cursor-pointer underline text-sm">
             Go back
           </Link>
         </>
@@ -208,19 +210,19 @@ export default function EmailSignup() {
       {/* --------------------- STEP 2 UI --------------------- */}
       {step === 2 && (
         <div className="w-full max-w-[300px]">
-          <h1 className="text-3xl font-semibold tracking-tighter  text-center">Tell us about you</h1>
+          <h1 className="text-xl font-creato text-black tracking-tight  text-center">Tell us about you</h1>
           <label className='block text-xs font-medium mt-10 text-gray-700' htmlFor='name'>Full Name</label>
           <input
             type="text"
 
-            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
+            className=" w-full text-black border-b border-gray-300 focus:border-b-black outline-none py-1 "
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='dob'>Date of Birth</label>
           <input
             type="date"
-            className="placeholder:text-xs w-full placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 k outline-none py-1 "
+            className="placeholder:text-xs w-full text-black placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 k outline-none py-1 "
             value={dob}
             onChange={(e) => setDob(e.target.value)}
           />
@@ -259,7 +261,7 @@ export default function EmailSignup() {
 
           <button
             onClick={() => setStep(1)}
-            className="mt-4 underline block cursor-pointer mx-auto text-sm"
+            className="mt-4 text-black/50 underline block cursor-pointer mx-auto text-sm"
           >
             Go back
           </button>

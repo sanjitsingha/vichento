@@ -544,14 +544,14 @@ const Page = () => {
         <div className="flex gap-2 mt-4 justify-end">
           <button
             onClick={() => setUsernameModalOpen(false)}
-            className="px-4 py-1 rounded"
+            className="px-4 border border-gray-400 py-1 text-black rounded-full"
           >
             Cancel
           </button>
           <button
             onClick={handleUpdateUsername}
             disabled={usernameLoading}
-            className="px-4 py-1 bg-black text-white rounded"
+            className="px-4 py-1 bg-black text-white rounded-full"
           >
             {usernameLoading ? "Saving..." : "Update"}
           </button>
@@ -560,11 +560,11 @@ const Page = () => {
 
       {/* ---------- Bio Modal ---------- */}
       <Modal open={bioModalOpen} onOpenChange={setBioModalOpen}>
-        <h2 className="text-[16px] mb-4">Update Bio</h2>
+        <h2 className="text-[16px] text-black font-creato mb-4">Update Bio</h2>
 
         <textarea
           placeholder="Write your bio..."
-          className="outline-none p-2 text-[14px] w-full rounded-md bg-gray-100"
+          className="outline-none p-2 text-[14px] w-full text-black rounded-md bg-gray-200"
           value={bioText}
           onChange={(e) => setBioText(e.target.value)}
           rows={6}
@@ -582,14 +582,14 @@ const Page = () => {
         <div className="flex gap-2 mt-4 justify-end">
           <button
             onClick={() => setBioModalOpen(false)}
-            className="px-4 py-1 rounded"
+            className="px-4 border border-gray-400 py-1 text-black rounded-full"
           >
             Cancel
           </button>
           <button
             onClick={handleUpdateBio}
             disabled={bioLoading}
-            className="px-4 py-1 bg-black text-white rounded"
+            className="px-4 py-1 bg-black text-white rounded-full"
           >
             {bioLoading ? "Saving..." : "Confirm"}
           </button>
@@ -598,7 +598,7 @@ const Page = () => {
 
       {/* ---------- Preferences Modal ---------- */}
       <Modal open={preferencesOpen} onOpenChange={setPreferencesOpen}>
-        <h2 className="text-[16px] mb-2 font-medium">Update Preferences</h2>
+        <h2 className="text-[16px] text-black mb-2 font-creato">Update Preferences</h2>
 
         <p className="text-sm text-gray-500 mb-4">
           Choose at least 3 topics you’re interested in
@@ -642,14 +642,14 @@ const Page = () => {
         <div className="flex gap-2 mt-5 justify-end">
           <button
             onClick={() => setPreferencesOpen(false)}
-            className="px-4 py-1 rounded text-sm"
+            className="px-4 py-1 rounded-full border border-gray-400 text-black"
           >
             Cancel
           </button>
           <button
             onClick={handleUpdatePreferences}
             disabled={prefLoading}
-            className="px-4 py-1 bg-black text-white rounded text-sm disabled:opacity-60"
+            className="px-4 py-1 bg-black text-white rounded-full text-sm disabled:opacity-60 "
           >
             {prefLoading ? "Saving..." : "Confirm"}
           </button>
@@ -658,11 +658,11 @@ const Page = () => {
 
       {/* ---------- Change Password Modal ---------- */}
       <Modal open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
-        <h2 className="text-[16px] mb-4">Change Password</h2>
+        <h2 className="text-[16px] text-black font-creato mb-4">Change Password</h2>
 
         <input
           placeholder="Current Password"
-          className="outline-none px-2 w-full bg-gray-200 text-[12px] py-2 rounded mb-2"
+          className="outline-none px-2 w-full border-b border-gray-300 text-black text-[14px] py-1 mb-4"
           type="password"
           value={oldPassword}
           onChange={(e) => setOldPassword(e.target.value)}
@@ -670,7 +670,7 @@ const Page = () => {
 
         <input
           placeholder="New Password"
-          className="outline-none px-2 w-full bg-gray-200 text-[12px] py-2 rounded"
+          className="outline-none px-2 w-full border-b border-gray-300 text-black text-[14px] py-1 mb-4"
           type="password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
@@ -688,14 +688,14 @@ const Page = () => {
         <div className="flex gap-2 mt-4 justify-end">
           <button
             onClick={() => setChangePasswordOpen(false)}
-            className="px-4 py-1 rounded"
+            className="px-4 py-1 rounded-full border border-gray-400 text-black"
           >
             Cancel
           </button>
           <button
             onClick={handleChangePassword}
             disabled={passLoading}
-            className="px-4 py-1 bg-black text-white rounded"
+            className="px-4 py-1 bg-black text-white rounded-full"
           >
             {passLoading ? "Saving..." : "Change"}
           </button>
