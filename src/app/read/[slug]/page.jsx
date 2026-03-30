@@ -283,14 +283,14 @@ export default function ReadArticlePage() {
         {article.title}
       </h1>
       {/* short description optional */}
-      <p className="text-xs md:text-xl tracking-wide font-creato mt-5 text-black/60">
+      <p className="text-lg md:text-xl tracking-wide font-creato mt-5 text-black/60">
         {article.shortDescription || null}
 
       </p>
 
       {/* AUTHOR SECTION */}
-      <div className="w-full flex flex-col md:flex-row  gap-3 md:gap-0  my-8 md:justify-between md:items-center ">
-        <div className="text-gray-500 text-xs md:text-sm flex gap-1 md:gap-4 items-center">
+      <div className="w-full flex my-4 justify-between ">
+        <div className="text-gray-500 text-sm md:text-lg flex gap-2 md:gap-4 items-center">
           <img
             src={
               isAuthor && user?.prefs?.avatar
@@ -306,7 +306,7 @@ export default function ReadArticlePage() {
           <p>{new Date(article.$createdAt).toDateString()}</p>
           {/* <p>{article.readTime} min read</p> */}
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3">
 
 
           <div className="flex items-center gap-2">
@@ -354,7 +354,7 @@ export default function ReadArticlePage() {
         />
       )}
 
-      <div className="prose font-serif prose-lg max-w-none text-[14px] md:text-[20px] ">
+      <div className="prose font-serif prose-lg max-w-none text-[18px] md:text-[22px] ">
         {HTMLReactParser(article.content)}
       </div>
 
