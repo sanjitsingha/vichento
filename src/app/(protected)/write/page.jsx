@@ -130,7 +130,7 @@ export default function WritePage() {
           title: title || "Untitled article",
           featuredImage: featuredImage || "",
           content,
-           shortDescription: shortDescription || "",
+          shortDescription: shortDescription || "",
           authorId: user.$id,
           authorName: user.name || "Anonymous",
           authorAvatar: user.prefs.avatar || null,
@@ -159,7 +159,7 @@ export default function WritePage() {
     <>
       <LoadingBar color="#16a34a" ref={loadingBarRef} />
 
-      <div className="w-full max-w-[800px] mx-auto pt-10">
+      <div className="w-full max-w-[800px] text-black mx-auto pt-10">
         <div className="w-full mb-4 flex justify-between">
           <div className="  flex items-center w-full">
             <Link
@@ -247,7 +247,7 @@ export default function WritePage() {
           </div>
 
           <div className="w-full mb-8"> 
-          <input onChange={(e)=>setshortdescription(e.target.value)} type="textarea" placeholder="Write a short description    (optional)" className="w-full font-creato   outline-none " />
+          <input value={shortDescription} onChange={(e)=>setshortdescription(e.target.value)} type="textarea" placeholder="Write a short description    (optional)" className="w-full font-creato   outline-none " />
           </div>
 
           <JoditEditor

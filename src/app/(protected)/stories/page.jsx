@@ -12,6 +12,8 @@ import {
 import Modal from "@/app/components/ui/Modal";
 const BUCKET_ID = "article-images";
 import Link from "next/link";
+import { IoBookmark } from "react-icons/io5";
+import { QueueListIcon as QueueSolid } from "@heroicons/react/24/solid";
 
 const page = () => {
   const [activeTab, setActiveTab] = useState("drafts");
@@ -46,7 +48,7 @@ const page = () => {
 
     fetchDrafts();
   }, [user?.$id]);
-
+console.log("Drafts:", drafts);
   useEffect(() => {
     if (!user?.$id) return;
 
@@ -127,7 +129,10 @@ const page = () => {
   return (
     <div className="w-full p-4 md:p-0">
       <div className="max-w-[800px] mx-auto pt-10">
-        <p className="text-[24px] text-black tracking-tight font-creato">Stories</p>
+         <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
+                  <p className="text-[24px] tracking-tight text-black font-creato">Stories</p>
+                  <QueueSolid className="text-gray-500 size-6"  />
+                </div>
 
         {/* Tabs */}
         <div className="mt-6 border-b border-gray-200 flex gap-6">
@@ -153,7 +158,65 @@ const page = () => {
             Published
           </button>
         </div>
+{activeTab === "drafts" && (
+  <div className="mt-4">
+    {loading && (
+      <p className="text-sm text-gray-500">Loading Drafts</p>
+    )}
 
+    <div className="flex flex-col divide-y divide-gray-200">
+      {drafts.map((draft) => {
+        const imageUrl = getImageUrl(draft.featuredImage);
+
+        return (
+          <div
+            key={draft.$id}
+            className="flex items-center justify-between md:px-2 py-3 rounded"
+          >
+            {/* LEFT */}
+            <div className="flex items-center gap-4">
+              {imageUrl && (
+                <img
+                  src={imageUrl}
+                  alt="thumbnail"
+                  className="w-20 h-16 object-cover rounded-lg"
+                />
+              )}
+
+              <div>
+                <p className="text-[17px] line-clamp-1 text-black font-medium">
+                  {draft.title || "Untitled"}
+                </p>
+
+                <p className="text-[12px] text-gray-500 mt-1">
+                  Last edited{" "}
+                  {new Date(draft.$updatedAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+
+            {/* RIGHT (keep simple for now) */}
+            <div className="flex text-black gap-4 items-center">
+              <Link href={`/write/${draft.$id}?type=draft`}>
+                Edit
+              </Link>
+
+              <button
+                onClick={() => {
+                  setSelectedDraftId(draft.$id);
+                  setDeleteDraftModal(true);
+                }}
+                className="text-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
         {/* CONTENT */}
         <div className="mt-6">
           {activeTab === "published" && (
@@ -182,7 +245,7 @@ const page = () => {
                         )}
 
                         <div>
-                          <p className="text-[17px] line-clamp-1 font-medium">
+                          <p className="text-[17px] line-clamp-1 text-black font-medium">
                             {article.title || "Untitled"}
                           </p>
 
@@ -239,7 +302,7 @@ const page = () => {
                           </button>
 
                           {openMenuId === article.$id && (
-                            <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-md shadow-md z-50">
+                            <div className="absolute right-0 mt-2 w-36 text-black bg-white border border-gray-200 rounded-md shadow-md z-50">
                               <Link
                                 href={`/read/${article.slug}`}
                                 className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
