@@ -90,6 +90,7 @@ export default function Homepage() {
       <div className="w-full max-w-[1200px] mx-auto px-4 flex gap-10">
         {/* ================= LEFT FEED ================= */}
         <div className="flex-1 pt-4">
+         
           {/* Tabs */}
           <div className="border-b border-gray-200 mb-8 flex gap-8">
             {["for-you", "explore"].map((tab) => (
@@ -145,6 +146,8 @@ export default function Homepage() {
         <div className="hidden lg:block w-[320px] pt-6 border-l border-gray-200 pl-6">
           <div className="sticky top-[80px]">
             <YourReadingLIst refreshKey={version} />
+            <br />
+            <br />
             <RecomendedTopics/>
           </div>
           

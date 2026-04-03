@@ -21,17 +21,17 @@ const RecomendedTopics = () => {
   };
 
   return (
-    <div className="w-full pt-16">
-      <p className="font-semibold mb-4 text-black font-creato">
+    <div className="w-full">
+      <p className="font-semibold mb-4 hidden md:block text-black font-creato">
         Your Reading List
       </p>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar md:flex-wrap md:overflow-visible">
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => handleClick(cat)}
-            className="px-4 py-1.5 rounded-full text-sm border bg-white text-gray-700 border-gray-300 hover:border-black transition"
+            className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm border bg-white text-gray-700 border-gray-300 hover:border-black transition"
           >
             {cat}
           </button>

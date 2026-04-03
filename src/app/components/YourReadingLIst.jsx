@@ -145,7 +145,7 @@ const getAvatarUrl = (fileId) => {
       <div className="w-full mt-6 border-t border-gray-300/80 pt-3">
         <Link
           href="/library"
-          className="text-sm text-green-600 hover:underline block text-center"
+          className="text-sm text-gray-600 hover:underline block text-center"
         >
           See all
         </Link>
