@@ -111,7 +111,7 @@ const getAvatarUrl = (fileId) => {
               className="flex gap-12 items-center"
             >
               <div className="flex-1">
-                <div className="w-full flex gap-2">
+                <div className="w-full items-center flex gap-3">
                   <div className="w-6 h-6 rounded-full overflow-hidden">
                     <img src={avatarUrl} alt="" />
                   </div>
@@ -123,12 +123,12 @@ const getAvatarUrl = (fileId) => {
                   </p>
                 </div>
 
-                <p className="text-[14px] mt-2 text-black    font-medium">
-                  {truncateText(article.title, 30)}
+                <p className="text-[16px] mt-2 text-black font-semibold font-creato">
+                  {truncateText(article.title, 60)}
                 </p>
               </div>
 
-              {imageUrl && (
+              {/* {imageUrl && (
                 <Image
                   src={imageUrl}
                   alt={article.title}
@@ -136,7 +136,7 @@ const getAvatarUrl = (fileId) => {
                   height={80}
                   className="rounded object-cover"
                 />
-              )}
+              )} */}
             </Link>
           );
         })}

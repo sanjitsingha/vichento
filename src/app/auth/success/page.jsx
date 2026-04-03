@@ -1,10 +1,10 @@
-// app/auth/success/page.js   (or app/auth/success/client.jsx if using app router)
 "use client";
 
 import { useEffect, useState } from "react";
 import { account } from "@/lib/appwrite";
 import { useAuthContext } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function OAuthSuccess() {
   const { setUser } = useAuthContext();
@@ -13,22 +13,33 @@ export default function OAuthSuccess() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    (async () => {
+    const timer = setTimeout(async () => {
       try {
-        // Fetch current user — Appwrite should have created the session cookie
         const user = await account.get();
         setUser(user);
-        // Redirect where you want (home or dashboard)
         router.push("/");
       } catch (err) {
         setError("OAuth login failed. Try again.");
       } finally {
         setLoading(false);
       }
-    })();
+    }, 2000); // delay to show animation
+
+    return () => clearTimeout(timer);
   }, []);
 
-  if (loading) return <p>Signing you in…</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  return null;
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+
+  return (
+    <div className="flex items-center justify-center h-[calc(100vh-70px)] bg-white">
+      <div className="animate-pulse">
+        <Image src={'/logo.png'} alt="Logo" width={80} height={80} priority />
+      </div>
+    </div>
+  );
 }
