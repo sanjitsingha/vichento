@@ -56,11 +56,11 @@ export default function Sidebar() {
       <div className=" flex flex-col w-full  h-full">
         <div className="flex-1"></div>
         <div className=" flex gap-4 pl-8">
-          <Link href="/privacy-policy" className="text-black/30 border-r pr-4 border-gray-300 text-[11px] font-medium">
+          <Link target="_blank" href="/privacy-policy" className="text-black/30 border-r pr-4 border-gray-300 text-[11px] font-medium">
             Privacy Policy
           </Link>
-          <Link href="/upgrade" className="text-black/30 text-[11px] font-medium">
-            Terms of Service
+          <Link target="_blank" href="/terms-and-conditions" className="text-black/30 text-[11px] font-medium">
+            Terms and conditions
           </Link>
         </div>
 

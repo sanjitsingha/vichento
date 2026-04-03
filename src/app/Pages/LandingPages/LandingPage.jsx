@@ -44,24 +44,12 @@ const LandingPage = () => {
         {/* FOOTER LINKS */}
         <div className="w-full flex justify-end h-[60px] border-t border-gray-300">
           <div className="flex items-center h-full gap-3 md:gap-4 flex-wrap md:flex-nowrap py-2">
-            {[
-              "Help",
-              "Status",
-              "About",
-              "Careers",
-              "Press",
-              "Blogs",
-              "Privacy",
-              "Terms",
-            ].map((item) => (
-              <Link
-                key={item}
-                className="text-[12px] md:text-[13px] text-gray-500"
-                href={"/"}
-              >
-                {item}
-              </Link>
-            ))}
+            <Link target="_blank" href="/privacy-policy" className="text-black/30 hover:text-black transition-all duration-300  text-[12px] font-medium">
+              Privacy Policy
+            </Link>
+            <Link target="_blank" href="/terms-and-conditions" className="text-black/30 hover:text-black transition-all duration-300  text-[12px] font-medium">
+              Terms and conditions
+            </Link>
           </div>
         </div>
       </div>
