@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { databases } from "@/lib/appwrite";
 import { Query } from "appwrite";
@@ -11,7 +12,6 @@ import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
 const DB_ID = "693d3d220017a846a1c0";
 const ARTICLES_COLLECTION = "articles";
 
-/* 🔹 Static categories (recommended for MVP) */
 const CATEGORIES = [
   "Technology",
   "Startups",
@@ -22,7 +22,9 @@ const CATEGORIES = [
   "Business",
 ];
 
-export default function page() {
+export default function Page() {
+  const searchParams = useSearchParams();
+
   const { user } = useAuthContext();
   const { likes, bookmarks, toggleLike, toggleBookmark } =
     useArticleActions(user?.$id);
@@ -30,49 +32,57 @@ export default function page() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategories, setActiveCategories] = useState([]);
+  const [isReady, setIsReady] = useState(false); // 👈 important
+
+  /* ================= READ FROM URL ================= */
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+
+    if (categoryFromUrl) {
+      setActiveCategories([categoryFromUrl]);
+    }
+
+    setIsReady(true); // 👈 allow fetch after this
+  }, [searchParams]);
 
   /* ================= FETCH ARTICLES ================= */
-useEffect(() => {
-  const fetchArticles = async () => {
-    setLoading(true);
+  useEffect(() => {
+    if (!isReady) return; // 👈 prevent early fetch
 
-    try {
-      let queries = [
-        Query.equal("status", ["published"]),
-        Query.orderDesc("$updatedAt"),
-        Query.limit(20),
-      ];
+    const fetchArticles = async () => {
+      setLoading(true);
 
-      if (activeCategories.length === 1) {
-        queries.push(Query.contains("categories", activeCategories[0]));
-      }
+      try {
+        let queries = [
+          Query.equal("status", ["published"]),
+          Query.orderDesc("$updatedAt"),
+          Query.limit(20),
+        ];
 
-      if (activeCategories.length > 1) {
-        queries.push(
-          Query.or(
-            activeCategories.map((cat) =>
-              Query.contains("categories", cat)
-            )
-          )
+        if (activeCategories.length === 1) {
+          queries.push(Query.contains("categories", activeCategories[0]));
+        }
+
+        if (activeCategories.length > 1) {
+          queries.push(Query.contains("categories", activeCategories));
+        }
+
+        const res = await databases.listDocuments(
+          DB_ID,
+          ARTICLES_COLLECTION,
+          queries
         );
+
+        setArticles(res.documents);
+      } catch (err) {
+        console.error("Explore fetch error:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const res = await databases.listDocuments(
-        DB_ID,
-        ARTICLES_COLLECTION,
-        queries
-      );
-
-      setArticles(res.documents);
-    } catch (err) {
-      console.error("Explore fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchArticles();
-}, [activeCategories]);
+    fetchArticles();
+  }, [activeCategories, isReady]);
 
   /* ================= CATEGORY TOGGLE ================= */
   const toggleCategory = (category) => {
@@ -86,10 +96,8 @@ useEffect(() => {
   /* ================= UI ================= */
   return (
     <div className="w-full max-w-[900px] mx-auto px-4 pt-6">
-      {/* Header */}
       <h1 className="text-[22px] font-semibold mb-6">Explore</h1>
 
-      {/* ================= CATEGORY CHIPS ================= */}
       <div className="flex flex-wrap gap-3 mb-8">
         {CATEGORIES.map((cat) => {
           const active = activeCategories.includes(cat);
@@ -110,7 +118,6 @@ useEffect(() => {
         })}
       </div>
 
-      {/* ================= FEED ================= */}
       {loading &&
         Array.from({ length: 5 }).map((_, i) => (
           <ShimmerArticle key={i} />

@@ -14,6 +14,7 @@ import ShimmerArticle from "../components/ShimmerArticle";
 import YourReadingLIst from "../components/YourReadingLIst";
 import StoriesCardHorizontal from "../components/StoriesCardHorizontal";
 import ForYou from "../components/ForYou";
+import RecomendedTopics from "../components/RecomendedTopics";
 
 const DB_ID = "693d3d220017a846a1c0";
 const ARTICLES_COLLECTION = "articles";
@@ -144,6 +145,7 @@ export default function Homepage() {
         <div className="hidden lg:block w-[320px] pt-6 border-l border-gray-200 pl-6">
           <div className="sticky top-[80px]">
             <YourReadingLIst refreshKey={version} />
+            <RecomendedTopics/>
           </div>
           
         </div>

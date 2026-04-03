@@ -15,6 +15,7 @@ import { IoArrowRedoOutline } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
 import RelatedArticles from "@/app/components/RelatedArticles";
 import { PiSparkle, PiSparkleFill } from "react-icons/pi";
+import Link from "next/link";
 
 const DATABASE_ID = "693d3d220017a846a1c0";
 const ARTICLES_COLLECTION = "articles";
@@ -267,7 +268,12 @@ export default function ReadArticlePage() {
       </div>
     );
   }
-  if (!article) return <p className="text-center mt-20">Article not found</p>;
+  if (!article) return <div>
+     <p className="text-center text-black font-creato  font-bold text-3xl mt-20">Article not found</p>
+     <Link href="/explore" className="text-gray-600 mx-auto w-fit mt-3 block hover:underline">
+       Back to Explore
+     </Link>
+  </div>;
 
   const imageUrl = article.featuredImage
     ? storage.getFileView(BUCKET_ID, article.featuredImage).toString()
