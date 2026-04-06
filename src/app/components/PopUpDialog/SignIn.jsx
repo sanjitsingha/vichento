@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { EnvelopeIcon, XMarkIcon } from "@heroicons/react/24/outline";

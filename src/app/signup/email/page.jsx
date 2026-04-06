@@ -2,28 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { account, ID } from "@/lib/appwrite";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/context/AuthContext";
-import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
 
-// profession options
-
+// ---------------- AVATARS ----------------
 const AVATARS = [
-  "69c3b1190013e1c34def",
-  "69c3b11400366576f43f",
-  "69c3b1100001e28a6f53",
-  "69c3b10b0017652ee857",
-  "69c3b105001867b3414e",
-  "69c3b0ff00156e6886a7",
-  "69c3b0f60016e5e370cd",
-  "69c3b0f00026e0b5d9e5",
-  "69c3b0e3002d6b4bc943",
-  "69c3b0de0017064e0a1e",
-  "69c3b0ce003aecbf2faa",
-  "69c3b0b90038fc4c6a8d",
-]
+  "1.png",
+  "2.png",
+  "3.png",
+  "4.png",
+  "5.png",
+  "6.png",
+  "7.png",
+  "8.png",
+  "9.png",
+  "10.png",
+  "11.png",
+  "12.png",
+];
+
 const professions = [
   "Student",
   "Freelancer",
@@ -39,22 +39,36 @@ const professions = [
   "Other",
 ];
 
-
+// ---------------- HELPERS ----------------
 const getRandomAvatar = () => {
-  return AVATARS[Math.floor(Math.random() * AVATARS.length)];
+  const file = AVATARS[Math.floor(Math.random() * AVATARS.length)]
+
+  const { data } = supabase.storage
+    .from("user_avatars")
+    .getPublicUrl(file)
+
+  return data.publicUrl
+}
+
+const generateUsername = (name) => {
+  const cleanName = name.toLowerCase().replace(/\s+/g, "");
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `${cleanName}${random}`;
 };
+
+// ---------------- COMPONENT ----------------
 export default function EmailSignup() {
   const router = useRouter();
   const { setUser } = useAuthContext();
 
   const [step, setStep] = useState(1);
 
-  // Step 1 fields
+  // Step 1
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // Step 2 fields
+  // Step 2
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [profession, setProfession] = useState("");
@@ -62,12 +76,11 @@ export default function EmailSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // STEP 1 → Create user
+  // ---------------- STEP 1 ----------------
   const handleSignupStep1 = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
-    // Password validation
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
 
     if (!passwordRegex.test(pass)) {
@@ -76,105 +89,113 @@ export default function EmailSignup() {
       );
     }
 
-    // Email basic check
     if (!email) {
       return setErrorMsg("Please enter a valid email.");
     }
 
-    // Move to next step
     setStep(2);
   };
 
-  // STEP 2 → Save profile preferences
-  const handleSignupStep2 = async () => {
-    setLoading(true);
-    setErrorMsg("");
+  // ---------------- STEP 2 ----------------
+ const handleSignupStep2 = async () => {
+  setLoading(true)
+  setErrorMsg("")
 
-    if (!name || !dob || !profession) {
-      setLoading(false);
-      return setErrorMsg("Please fill all fields.");
+  if (!name || !dob || !profession) {
+    setLoading(false)
+    return setErrorMsg("Please fill all fields.")
+  }
+
+  try {
+    const username = generateUsername(name)
+    const avatar = getRandomAvatar()
+
+    // ✅ Create auth user
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: pass,
+    })
+
+    if (error) throw error
+
+    const user = data.user
+
+    if (!user) {
+      setLoading(false)
+      return setErrorMsg("Please verify your email first.")
     }
 
-    try {
-      // ✅ Create account
-      await account.create({
-        userId: ID.unique(),
-        email,
-        password: pass,
-        name,
-      });
+    // ✅ Insert into users table
+    const { error: dbError } = await supabase
+      .from("users")
+      .insert([
+        {
+          id: user.id,
+          email,
+          name,
+          username,
+          dob,
+          profession,
+          avatar,
+        },
+      ])
 
+    if (dbError) throw dbError
 
-      // ✅ Login
-      const session = await account.createEmailPasswordSession({
-        email,
-        password: pass,
-      });
-      await account.createVerification(
-        "http://localhost:3000/verify-email"
-      );
-      setUser(session.user);
+    router.push("/")
+  } catch (error) {
+    setErrorMsg(error.message)
+  }
 
+  setLoading(false)
+}
 
-      // ✅ Assign RANDOM avatar (fileId)
-      const selectedAvatar = getRandomAvatar();
-
-      // ✅ Save prefs
-      await account.updatePrefs({
-        dob,
-        profession,
-        avatar: selectedAvatar,
-      });
-
-      router.push("/");
-      // router.push("/verify-email");
-    } catch (error) {
-      setErrorMsg(error.message);
-    }
-
-    setLoading(false);
-  };
   return (
     <div className="w-full min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-6">
-      {/* --------------------- STEP 1 UI --------------------- */}
+      
+      {/* ---------------- STEP 1 ---------------- */}
       {step === 1 && (
         <>
-            <Image width={60} height={60} alt="logo" src={'/logo.png'}/>
-          <h1 className='text-2xl mt-10 text-black font-creato  tracking-tight align-start'>Create your account</h1>
-          <p className='text-sm mt-2 text-black/60 text-center mb-10'>It only takes a moment to get started with your account.</p>
+          <Image width={60} height={60} alt="logo" src={"/logo.png"} />
+
+          <h1 className="text-2xl mt-10 text-black font-creato tracking-tight">
+            Create your account
+          </h1>
+
+          <p className="text-sm mt-2 text-black/60 text-center mb-10">
+            It only takes a moment to get started with your account.
+          </p>
 
           <form
             className="w-full max-w-[300px] flex flex-col"
             onSubmit={handleSignupStep1}
           >
-            <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='email'>Email</label>
-            {/* EMAIL */}
+            <label className="text-xs mt-4 text-gray-700">Email</label>
+
             <input
               type="email"
               placeholder="johndoe@hotmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="font-semibold placeholder:text-gray-500 text-black placeholder:text-xs placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1  "
+              className="border-b py-1 outline-none"
               required
             />
 
+            <div className="relative mt-4">
+              <label className="text-xs text-gray-700">Password</label>
 
-            {/* PASSWORD WITH EYE ICON */}
-            <div className="relative w-full mt-4 mb-3">
-              <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='password'>Password</label>
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="123***"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                className="font-semibold placeholder:text-xs w-full text-black placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1 "
+                className="w-full border-b py-1 outline-none"
                 required
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 cursor-pointer "
+                className="absolute right-2 top-6"
               >
                 {showPassword ? (
                   <EyeSlashIcon className="w-5 h-5" />
@@ -184,84 +205,69 @@ export default function EmailSignup() {
               </button>
             </div>
 
-            {/* ERROR */}
             {errorMsg && (
-              <div className="w-full bg-red-100 p-2 border border-red-300 rounded-sm mt-4">
-                <p className="text-xs text-red-500">{errorMsg}</p>
-              </div>
+              <p className="text-red-500 text-xs mt-3">{errorMsg}</p>
             )}
 
-
-            {/* NEXT BUTTON */}
-            <button
-              disabled={loading}
-              className="bg-black text-white rounded-full cursor-pointer  py-2 mt-8 disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {loading ? "Please wait..." : "Next →"}
+            <button className="bg-black text-white rounded-full py-2 mt-6">
+              Next →
             </button>
           </form>
-
-          <Link href="/signup" className="mt-6 text-black/50  cursor-pointer underline text-sm">
-            Go back
-          </Link>
         </>
       )}
 
-      {/* --------------------- STEP 2 UI --------------------- */}
+      {/* ---------------- STEP 2 ---------------- */}
       {step === 2 && (
         <div className="w-full max-w-[300px]">
-          <h1 className="text-xl font-creato text-black tracking-tight  text-center">Tell us about you</h1>
-          <label className='block text-xs font-medium mt-10 text-gray-700' htmlFor='name'>Full Name</label>
+          <h1 className="text-xl text-center">Tell us about you</h1>
+
           <input
             type="text"
-
-            className=" w-full text-black border-b border-gray-300 focus:border-b-black outline-none py-1 "
+            placeholder="Full Name"
+            className="w-full border-b mt-6 py-1"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <label className='block text-xs font-medium mt-4 text-gray-700' htmlFor='dob'>Date of Birth</label>
+
           <input
             type="date"
-            className="placeholder:text-xs w-full text-black placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 k outline-none py-1 "
+            className="w-full border-b mt-4 py-1"
             value={dob}
             onChange={(e) => setDob(e.target.value)}
           />
 
-          <p className="mb-2 mt-6 text-gray-600">Choose your profession</p>
+          <p className="mt-6 mb-2">Choose profession</p>
 
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2">
             {professions.map((p) => (
               <button
                 key={p}
                 type="button"
-                className={`px-3 py-1 text-sm rounded-full border ${profession === p
-                  ? "bg-black text-white"
-                  : "bg-gray-100 text-gray-700"
-                  }`}
                 onClick={() => setProfession(p)}
+                className={`px-3 py-1 text-sm rounded-full ${
+                  profession === p ? "bg-black text-white" : "bg-gray-200"
+                }`}
               >
                 {p}
               </button>
             ))}
           </div>
 
-          {/* ERROR */}
           {errorMsg && (
-            <div className="w-full bg-red-100 p-2 border border-red-300 rounded-sm mt-4">
-              <p className="text-xs text-red-500">{errorMsg}</p>
-            </div>
+            <p className="text-red-500 text-xs mt-3">{errorMsg}</p>
           )}
+
           <button
             onClick={handleSignupStep2}
             disabled={loading}
-            className="bg-black cursor-pointer text-white rounded-full py-2 mt-4 w-full disabled:opacity-60"
+            className="bg-black text-white rounded-full py-2 mt-6 w-full"
           >
-            {loading ? "Saving..." : "Create Account"}
+            {loading ? "Creating..." : "Create Account"}
           </button>
 
           <button
             onClick={() => setStep(1)}
-            className="mt-4 text-black/50 underline block cursor-pointer mx-auto text-sm"
+            className="mt-4 text-sm underline text-center w-full"
           >
             Go back
           </button>

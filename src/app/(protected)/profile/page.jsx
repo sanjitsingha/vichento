@@ -1,17 +1,16 @@
 "use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { XCircleIcon, CheckCircleIcon, ArrowRightOnRectangleIcon, ArrowRightStartOnRectangleIcon, ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import Modal from "@/app/components/ui/Modal";
-import { account, storage } from "@/lib/appwrite";
-import { ID } from "@/lib/appwrite";
-import { logoutUser } from "@/lib/logout";
 import { useRouter } from "next/navigation";
 import { PencilIcon } from "@heroicons/react/24/outline";
+import { supabase } from "@/lib/supabaseClient";
+import { logout } from "../../../../services/authService";
 
 const Page = () => {
   const router = useRouter();
+  const [profile, setProfile] = useState(null);
   const { user, loading, setUser } = useAuthContext();
   const fileInputRef = useRef(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -34,6 +33,26 @@ const Page = () => {
   ];
 
   // State for preferences
+
+
+
+  useEffect(() => {
+  const fetchProfile = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+
+    if (!authData?.user) return;
+
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    setProfile(data);
+  };
+
+  fetchProfile();
+}, []);
 
   const [selectedInterests, setSelectedInterests] = useState(
     user?.prefs?.interests || []
@@ -383,13 +402,11 @@ const Page = () => {
         <div className="flex justify-between items-baseline">
           <h1 className="text-[24px] text-black tracking-tight font-creato">Profile</h1>
           <div className="relative">
-            <img
-              src={getAvatarUrl()}
-              alt="Profile"
-              onClick={() => setAvatarModalOpen(true)}
-              className={`w-12 h-12 rounded-full border-2 border-red-600 p-[2px] object-cover cursor-pointer ${avatarUploading ? "opacity-50" : ""
-                }`}
-            />
+          <img
+  src={profile?.avatar || "/default-avatar.png"}
+  alt="Profile"
+  className="w-12 h-12 rounded-full"
+/>
 
             {/* ✏️ Pen Icon */}
             <div className="absolute bottom-0 right-0 bg-black p-1 rounded-full">
@@ -406,7 +423,7 @@ const Page = () => {
               onClick={() => setDisplayNameModal(true)}
               className="underline cursor-pointer "
             >
-              {user.name || "—"}
+              {profile?.name || "—"}
             </button>
           </div>
 
@@ -422,7 +439,7 @@ const Page = () => {
 
           <div className="flex items-center text-[14px] justify-between text-black/60">
             <p>Email Address</p>
-            <p>{user.email || "—"}</p>
+            <p>{profile?.email || "—"}</p>
           </div>
 
           <div
@@ -451,9 +468,7 @@ const Page = () => {
           </div>
           <hr className="md:my-10 my-6 opacity-20" />
           <button
-            onClick={() => {
-              handleLogout();
-            }}
+            onClick={logout}
             className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-100 border border-gray-300 md:py-5 py-2 px-4 rounded-lg "
           >
             <div>
@@ -464,16 +479,6 @@ const Page = () => {
             </div>
             <ArrowRightStartOnRectangleIcon className="w-6 h-6 ml-1 inline text-red-500" />
           </button>
-
-          {/* <button
-            onClick={() => setDeleteModalOpen(true)}
-            className="w-full cursor-pointer text-left "
-          >
-            <p className="text-red-500 text-[14px]">Delete Account</p>
-            <p className="text-[12px] text-black/60">
-              Permanently delete your account and all of your content.
-            </p>
-          </button> */}
         </div>
         <div className="mt-8 w-full">
           <h1 className="md:text-[16px] text-sm text-center  text-black/40">
@@ -731,7 +736,7 @@ const Page = () => {
 
         {/* Avatar Grid */}
         <div className="grid grid-cols-4 gap-3 mb-4">
-          {AVATARS.map((id) => (
+          {/* {AVATARS.map((id) => (
             <img
               key={id}
               src={storage.getFileView("article-images", id)}
@@ -739,7 +744,7 @@ const Page = () => {
                 }`}
               onClick={() => handleSelectAvatar(id)}
             />
-          ))}
+          ))} */}
         </div>
 
         {/* OR Divider */}

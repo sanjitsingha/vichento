@@ -17,6 +17,7 @@
     "@lexical/selection": "^0.39.0",
     "@lexical/utils": "^0.39.0",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@supabase/supabase-js": "^2.101.1",
     "@tailwindcss/typography": "^0.5.19",
     "appwrite": "^21.5.0",
     "html-react-parser": "^5.2.10",
