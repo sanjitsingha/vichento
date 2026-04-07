@@ -1,25 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PiThumbsUp } from "react-icons/pi";
-import { PiThumbsUpFill } from "react-icons/pi";
+import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
 import { useParams } from "next/navigation";
-import { databases, storage, ID } from "@/lib/appwrite";
-import { Query, Permission, Role } from "appwrite";
 import HTMLReactParser from "html-react-parser";
-import { GoBookmark, GoBookmarkFill } from "react-icons/go";
-import { IoBookmark, IoBookmarkOutline, IoBulbOutline } from "react-icons/io5";
-import { IoIosShareAlt } from "react-icons/io";
+import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import { IoArrowRedoOutline } from "react-icons/io5";
-
 import { useAuthContext } from "@/context/AuthContext";
 import RelatedArticles from "@/app/components/RelatedArticles";
-import { PiSparkle, PiSparkleFill } from "react-icons/pi";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
-const DATABASE_ID = "693d3d220017a846a1c0";
-const ARTICLES_COLLECTION = "articles";
-const BUCKET_ID = "article-images";
 
 export default function ReadArticlePage() {
   const { slug } = useParams();
@@ -36,12 +27,7 @@ export default function ReadArticlePage() {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkDocId, setBookmarkDocId] = useState(null);
 
-  const isAuthor = user?.$id === article?.authorId;
-
-  const getAvatarUrl = (fileId) => {
-    if (!fileId) return "/default-avatar.png";
-    return storage.getFileView(BUCKET_ID, fileId).toString();
-  };
+  const isAuthor = user?.id === article?.author_id;
 
   /* ---------------- FETCH ARTICLE ---------------- */
   useEffect(() => {
@@ -49,26 +35,23 @@ export default function ReadArticlePage() {
 
     const fetchArticle = async () => {
       try {
-        const res = await databases.listDocuments(
-          DATABASE_ID,
-          ARTICLES_COLLECTION,
-          [Query.equal("slug", [slug])]
-        );
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("slug", slug)
+          .single();
 
-        if (!res.documents.length) return;
+        if (error) throw error;
 
-        const doc = res.documents[0];
-        setArticle(doc);
+        setArticle(data);
 
-        // ✅ FIX: fetch real likes count
-        const likesRes = await databases.listDocuments(
-          DATABASE_ID,
-          "article_likes",
-          [Query.equal("articleId", [doc.$id])]
-        );
+        // likes count
+        const { count } = await supabase
+          .from("article_likes")
+          .select("*", { count: "exact", head: true })
+          .eq("article_id", data.id);
 
-        setLikesCount(likesRes.total);
-
+        setLikesCount(count || 0);
       } catch (err) {
         console.error("Fetch article failed:", err);
       } finally {
@@ -79,109 +62,102 @@ export default function ReadArticlePage() {
     fetchArticle();
   }, [slug]);
 
-  /* ---------------- VIEW COUNT (once/session) ---------------- */
+  /* ---------------- VIEW TRACKING ---------------- */
   useEffect(() => {
-    if (!article?.$id) return;
+    if (!article?.id) return;
 
-    const viewed = sessionStorage.getItem(`viewed_${article.$id}`);
+    const viewed = sessionStorage.getItem(`viewed_${article.id}`);
     if (viewed) return;
 
-    databases
-      .updateDocument(DATABASE_ID, ARTICLES_COLLECTION, article.$id, {
-        views: (article.views || 0) + 1,
-      })
-      .catch(console.error);
+    const addView = async () => {
+      await supabase.from("article_views").insert([
+        {
+          article_id: article.id,
+          user_id: user?.id || null,
+        },
+      ]);
 
-    sessionStorage.setItem(`viewed_${article.$id}`, "true");
-  }, [article?.$id]);
-
-  /* ---------------- READ COUNT (30s timer) ---------------- */
-  useEffect(() => {
-    if (!article?.$id) return;
-
-    const read = sessionStorage.getItem(`read_${article.$id}`);
-    if (read) return;
-
-    readTimerRef.current = setTimeout(() => {
-      databases
-        .updateDocument(DATABASE_ID, ARTICLES_COLLECTION, article.$id, {
-          reads: (article.reads || 0) + 1,
+      // optional count update
+      await supabase
+        .from("articles")
+        .update({
+          view_count: (article.view_count || 0) + 1,
         })
-        .catch(console.error);
+        .eq("id", article.id);
+    };
 
-      sessionStorage.setItem(`read_${article.$id}`, "true");
-    }, 30000);
+    addView();
+    sessionStorage.setItem(`viewed_${article.id}`, "true");
+  }, [article?.id]);
 
-    return () => clearTimeout(readTimerRef.current);
-  }, [article?.$id]);
-
-  /* ---------------- LIKE & BOOKMARK STATUS ---------------- */
+  /* ---------------- LIKE STATUS ---------------- */
   useEffect(() => {
-    if (!user || !article?.$id) return;
+    if (!user || !article?.id) return;
 
-    const initStatus = async () => {
-      try {
-        const [likesRes, bookmarkRes] = await Promise.all([
-          databases.listDocuments(DATABASE_ID, "article_likes", [
-            Query.equal("articleId", [article.$id]),
-            Query.equal("userId", [user.$id]),
-          ]),
-          databases.listDocuments(DATABASE_ID, "article_bookmarks", [
-            Query.equal("articleId", [article.$id]),
-            Query.equal("userId", [user.$id]),
-          ]),
-        ]);
+    const checkLike = async () => {
+      const { data } = await supabase
+        .from("article_likes")
+        .select("*")
+        .eq("article_id", article.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-        if (likesRes.documents.length) {
-          setIsLiked(true);
-          setLikeDocId(likesRes.documents[0].$id);
-        }
-
-        if (bookmarkRes.documents.length) {
-          setIsBookmarked(true);
-          setBookmarkDocId(bookmarkRes.documents[0].$id);
-        }
-      } catch (err) {
-        console.error("Status check failed:", err);
+      if (data) {
+        setIsLiked(true);
+        setLikeDocId(data.id);
       }
     };
 
-    initStatus();
-  }, [user, article?.$id]);
+    checkLike();
+  }, [user, article?.id]);
+
+  /* ---------------- BOOKMARK STATUS ---------------- */
+  useEffect(() => {
+    if (!user || !article?.id) return;
+
+    const checkBookmark = async () => {
+      const { data } = await supabase
+        .from("bookmarks")
+        .select("*")
+        .eq("article_id", article.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (data) {
+        setIsBookmarked(true);
+        setBookmarkDocId(data.id);
+      }
+    };
+
+    checkBookmark();
+  }, [user, article?.id]);
 
   /* ---------------- LIKE TOGGLE ---------------- */
   const toggleLike = async () => {
     if (!user) return alert("Please login to like");
 
-    // optimistic update
     if (isLiked) {
       setIsLiked(false);
       setLikesCount((v) => Math.max(v - 1, 0));
+
+      await supabase.from("article_likes").delete().eq("id", likeDocId);
+      setLikeDocId(null);
     } else {
       setIsLiked(true);
       setLikesCount((v) => v + 1);
-    }
 
-    try {
-      if (isLiked) {
-        await databases.deleteDocument(DATABASE_ID, "article_likes", likeDocId);
-        setLikeDocId(null);
-      } else {
-        const doc = await databases.createDocument(
-          DATABASE_ID,
-          "article_likes",
-          ID.unique(),
-          { articleId: article.$id, userId: user.$id },
-          [
-            Permission.read(Role.user(user.$id)),
-            Permission.delete(Role.user(user.$id)),
-          ],
-        );
-        setLikeDocId(doc.$id);
-      }
-    } catch (err) {
-      console.error(err);
-      // rollback if needed (optional)
+      const { data } = await supabase
+        .from("article_likes")
+        .insert([
+          {
+            article_id: article.id,
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      setLikeDocId(data.id);
     }
   };
 
@@ -189,36 +165,30 @@ export default function ReadArticlePage() {
   const toggleBookmark = async () => {
     if (!user) return alert("Please login to bookmark");
 
-    setIsBookmarked((v) => !v); // instant UI
+    if (isBookmarked) {
+      setIsBookmarked(false);
 
-    try {
-      if (isBookmarked) {
-        await databases.deleteDocument(
-          DATABASE_ID,
-          "article_bookmarks",
-          bookmarkDocId,
-        );
-        setBookmarkDocId(null);
-      } else {
-        const doc = await databases.createDocument(
-          DATABASE_ID,
-          "article_bookmarks",
-          ID.unique(),
-          { articleId: article.$id, userId: user.$id },
-          [
-            Permission.read(Role.user(user.$id)),
-            Permission.delete(Role.user(user.$id)),
-          ],
-        );
-        setBookmarkDocId(doc.$id);
-      }
-    } catch (err) {
-      console.error(err);
+      await supabase.from("bookmarks").delete().eq("id", bookmarkDocId);
+      setBookmarkDocId(null);
+    } else {
+      setIsBookmarked(true);
+
+      const { data } = await supabase
+        .from("bookmarks")
+        .insert([
+          {
+            article_id: article.id,
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      setBookmarkDocId(data.id);
     }
   };
 
   /* ---------------- SHARE ---------------- */
-
   const handleShare = async () => {
     const url = window.location.href;
 
@@ -234,148 +204,94 @@ export default function ReadArticlePage() {
     }
   };
 
-  /* ---------------- RENDER ---------------- */
+  /* ---------------- LOADING ---------------- */
   if (loading) {
+    return <p className="text-center mt-20">Loading...</p>;
+  }
+
+  if (!article)
     return (
-      <div className="max-w-[800px] mx-auto p-4 animate-pulse">
-
-        {/* Title */}
-        <div className="h-8 bg-gray-300 rounded w-3/4 mt-6"></div>
-        <div className="h-8 bg-gray-300 rounded w-1/2 mt-2"></div>
-
-        {/* Description */}
-        <div className="h-4 bg-gray-300 rounded w-full mt-6"></div>
-        <div className="h-4 bg-gray-300 rounded w-5/6 mt-2"></div>
-
-        {/* Author */}
-        <div className="flex items-center gap-3 mt-8">
-          <div className="w-6 h-6 rounded-full bg-gray-300"></div>
-          <div className="h-4 bg-gray-300 rounded w-24"></div>
-          <div className="h-4 bg-gray-300 rounded w-20"></div>
-        </div>
-
-        {/* Image */}
-        <div className="w-full h-[200px] bg-gray-300 rounded mt-8"></div>
-
-        {/* Content lines */}
-        <div className="mt-8 space-y-3">
-          <div className="h-4 bg-gray-300 rounded w-full"></div>
-          <div className="h-4 bg-gray-300 rounded w-11/12"></div>
-          <div className="h-4 bg-gray-300 rounded w-10/12"></div>
-          <div className="h-4 bg-gray-300 rounded w-9/12"></div>
-          <div className="h-4 bg-gray-200 rounded w-full"></div>
-        </div>
+      <div>
+        <p className="text-center text-black font-bold text-3xl mt-20">
+          Article not found
+        </p>
+        <Link
+          href="/explore"
+          className="text-gray-600 mx-auto w-fit mt-3 block hover:underline"
+        >
+          Back to Explore
+        </Link>
       </div>
     );
-  }
-  if (!article) return <div>
-     <p className="text-center text-black font-creato  font-bold text-3xl mt-20">Article not found</p>
-     <Link href="/explore" className="text-gray-600 mx-auto w-fit mt-3 block hover:underline">
-       Back to Explore
-     </Link>
-  </div>;
 
-  const imageUrl = article.featuredImage
-    ? storage.getFileView(BUCKET_ID, article.featuredImage).toString()
-    : null;
+  const imageUrl = article.cover_image || null;
 
   return (
     <div className="max-w-[800px] p-4 md:p-0 mx-auto pt-2">
-      {/* <div className="bg-gray-200 w-full h-[120px] mt-10 rounded-sm flex items-center justify-center">
-        <p className="text-gray-500">Advertisment Area</p>
-      </div> */}
-
-      <h1 className=" text-2xl font-semibold  md:text-[34px] text-black  font-creato tracking-tight md:pt-18 pt-8 leading-tight">
+      <h1 className="text-2xl md:text-[34px] font-creato font-semibold text-black mt-8">
         {article.title}
       </h1>
-      {/* short description optional */}
-      <p className="text-lg md:text-xl tracking-wide font-creato mt-5 text-black/60">
-        {article.shortDescription || null}
 
+      <p className="text-lg font-creato mt-5 text-black/60">
+        {article.meta_description}
       </p>
 
-      {/* AUTHOR SECTION */}
-      <div className="w-full flex my-4 justify-between ">
-        <div className="text-gray-500 text-sm md:text-lg flex gap-2 md:gap-4 items-center">
-          <img
-            src={
-              isAuthor && user?.prefs?.avatar
-                ? getAvatarUrl(user.prefs.avatar)
-                : getAvatarUrl(article.authorAvatar)
-            }
-            className="w-6 h-6 rounded-full object-cover"
-            alt="Author"
-          />
-
-          <p>{isAuthor ? user.name : article.authorName || "Admin"}</p>
-
-          <p>{new Date(article.$createdAt).toDateString()}</p>
-          {/* <p>{article.readTime} min read</p> */}
+      {/* AUTHOR */}
+      <div className="flex justify-between my-4">
+        <div className="text-gray-500 text-sm flex gap-3 items-center">
+          <p>{isAuthor ? user?.user_metadata?.name : "Author"}</p>
+          <p>{new Date(article.created_at).toDateString()}</p>
         </div>
+
         <div className="flex items-center gap-3">
-
-
+          {/* LIKE */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => toggleLike(article.$id)} // later rename to onSpark
-              className="cursor-pointer transition-transform active:scale-95"
-              title="Spark this post"
-            >
+            <button onClick={toggleLike}>
               {isLiked ? (
-                <PiThumbsUpFill size={20} className="text-black" />
+                <PiThumbsUpFill size={20} />
               ) : (
-                <PiThumbsUp
-                  size={20}
-                  className="text-gray-500 hover:text-black transition-colors"
-                />
+                <PiThumbsUp size={20} />
               )}
             </button>
-            <span className="text-sm text-gray-500">{likesCount}</span>
+            <span className="text-sm">{likesCount}</span>
           </div>
-          <button className="cursor-pointer" onClick={toggleBookmark}>
+
+          {/* BOOKMARK */}
+          <button onClick={toggleBookmark}>
             {isBookmarked ? (
-              <IoBookmark size={18} className="text-black" />
+              <IoBookmark size={18} />
             ) : (
-              <IoBookmarkOutline
-                size={18}
-                className="text-gray-500 hover:text-black"
-              />
+              <IoBookmarkOutline size={18} />
             )}
           </button>
-          <button
-            onClick={handleShare}
-            className="h-8 w-8 rounded-full cursor-pointer flex items-center justify-center transition"
-          >
-            <IoArrowRedoOutline className="text-gray-500" size={18} />
+
+          {/* SHARE */}
+          <button onClick={handleShare}>
+            <IoArrowRedoOutline size={18} />
           </button>
         </div>
       </div>
-
 
       {imageUrl && (
         <img
           src={imageUrl}
-          className="w-full h-full my-1 rounded object-cover"
+          className="w-full rounded my-4"
           alt={article.title}
         />
       )}
 
-      <div className="prose font-serif prose-lg text-black max-w-none text-[18px] md:text-[22px]">
+      <div className="prose max-w-none  text-black">
         {HTMLReactParser(article.content)}
       </div>
 
+      {/* RELATED */}
+      <div className="py-10">
+        <hr className="my-6" />
+        <p className="text-xl font-semibold">Related Stories</p>
 
-
-
-
-      <div className="w-full py-10">
-        <hr className="my-6 bg-black opacity-20" />
-        <p className="text-[22px] text-black font-semibold tracking-tighter">
-          Related Stories
-        </p>
         <RelatedArticles
           categories={article.categories}
-          currentId={article.$id}
+          currentId={article.id}
         />
       </div>
     </div>
