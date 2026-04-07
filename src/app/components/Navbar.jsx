@@ -7,6 +7,8 @@ import { logoutUser } from "@/lib/logout";
 import { useRouter } from "next/navigation";
 import { storage } from "@/lib/appwrite";
 import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
+
 
 import { MdArrowOutward } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
@@ -23,21 +25,47 @@ import {
 const Navbar = () => {
   const { user, loading, setUser } = useAuthContext();
   const router = useRouter();
-
+const [profile, setProfile] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
+
+
+ useEffect(() => {
+  const fetchProfile = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+
+    if (!authData?.user) return;
+
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", authData.user.id)
+      .single();
+
+    setProfile(data);
+  };
+
+  fetchProfile();
+}, []);
+
+
+console.log("USER PROFILE:", profile)
+
 
   const getAvatarUrl = () => {
     if (!user?.prefs?.avatar) return "/default-avatar.png";
     return storage.getFileView("article-images", user.prefs.avatar);
   };
 
-  const handleLogout = async () => {
-    await logoutUser();
-    setUser(null);
-    setSidebarOpen(false);
-    router.refresh();
-  };
+
+
+  // const handleLogout = async () => {
+  //   await logoutUser();
+  //   setUser(null);
+  //   setSidebarOpen(false);
+  //   router.refresh();
+  // };
 
   return (
     <>
@@ -125,7 +153,7 @@ const Navbar = () => {
 
                 <Link href="/profile">
                   <img
-                    src={getAvatarUrl()}
+                    src={profile?.avatar || "/default-avatar.png"}
                     className="w-8 h-8 p-[2px]  border-primary border  rounded-full object-cover"
                     alt="avatar"
                   />

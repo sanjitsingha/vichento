@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { XCircleIcon, CheckCircleIcon, ArrowRightOnRectangleIcon, ArrowRightStartOnRectangleIcon, ArrowUpRightIcon } from "@heroicons/react/24/outline";
+import { ArrowRightStartOnRectangleIcon, ArrowUpRightIcon } from "@heroicons/react/24/outline";
 import Modal from "@/app/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import { PencilIcon } from "@heroicons/react/24/outline";
@@ -137,20 +137,20 @@ const Page = () => {
   const [passMsg, setPassMsg] = useState(null);
 
 
-  const AVATARS = [
-    "69c3b1190013e1c34def",
-    "69c3b11400366576f43f",
-    "69c3b1100001e28a6f53",
-    "69c3b10b0017652ee857",
-    "69c3b105001867b3414e",
-    "69c3b0ff00156e6886a7",
-    "69c3b0f60016e5e370cd",
-    "69c3b0f00026e0b5d9e5",
-    "69c3b0e3002d6b4bc943",
-    "69c3b0de0017064e0a1e",
-    "69c3b0ce003aecbf2faa",
-    "69c3b0b90038fc4c6a8d",
-  ];
+  // const AVATARS = [
+  //   "69c3b1190013e1c34def",
+  //   "69c3b11400366576f43f",
+  //   "69c3b1100001e28a6f53",
+  //   "69c3b10b0017652ee857",
+  //   "69c3b105001867b3414e",
+  //   "69c3b0ff00156e6886a7",
+  //   "69c3b0f60016e5e370cd",
+  //   "69c3b0f00026e0b5d9e5",
+  //   "69c3b0e3002d6b4bc943",
+  //   "69c3b0de0017064e0a1e",
+  //   "69c3b0ce003aecbf2faa",
+  //   "69c3b0b90038fc4c6a8d",
+  // ];
 
   // console.log(user); // Get details of Auth User
 
@@ -403,7 +403,7 @@ const Page = () => {
           <h1 className="text-[24px] text-black tracking-tight font-creato">Profile</h1>
           <div className="relative">
           <img
-  src={profile?.avatar || "/default-avatar.png"}
+  src={profile?.avatar || "/default-avatar.jpg"}
   alt="Profile"
   className="w-12 h-12 rounded-full"
 />
