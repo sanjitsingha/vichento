@@ -1,16 +1,21 @@
 "use client";
 import { FcGoogle } from "react-icons/fc";
 
-import { account } from "@/lib/appwrite";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function GoogleSignInButton() {
-  const handleGoogleLogin = () => {
-    account.createOAuth2Session(
-      "google",
-      `${window.location.origin}/auth/success`,
-      `${window.location.origin}/auth/failure`
-    );
-  };
+ const handleGoogleLogin = async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    console.error(error.message);
+  }
+};
 
   return (
     <button
