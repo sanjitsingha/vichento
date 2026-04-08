@@ -50,7 +50,7 @@ const [profile, setProfile] = useState(null)
 }, []);
 
 
-console.log("USER PROFILE:", profile)
+// console.log("USER PROFILE:", profile)
 
 
   const getAvatarUrl = () => {

@@ -1,19 +1,11 @@
 "use client";
-import { PiSparkle } from "react-icons/pi";
-import { PiSparkleFill } from "react-icons/pi";
-import { PiThumbsUp } from "react-icons/pi";
-import { PiThumbsUpFill } from "react-icons/pi";
+
 import Link from "next/link";
-import { RiFireLine } from "react-icons/ri";
-import { storage } from "@/lib/appwrite";
-import { IoIosShareAlt } from "react-icons/io";
-import { IoBookmarkOutline } from "react-icons/io5";
-import { IoBookmark } from "react-icons/io5";
-import { databases } from "@/lib/appwrite";
-import { useEffect, useState } from "react";
+import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
+import { IoBookmarkOutline, IoBookmark } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
-import { HandThumbUpIcon } from "@heroicons/react/24/outline";
-const BUCKET_ID = "article-images";
+import { supabase } from "@/lib/supabaseClient";
+
 export default function StoriesCardHorizontal({
   article,
   isLiked,
@@ -23,45 +15,61 @@ export default function StoriesCardHorizontal({
 }) {
   const { user } = useAuthContext();
 
-  const getImageUrl = (fileId) =>
-    fileId ? storage.getFileView(BUCKET_ID, fileId).toString() : null;
+  /* ================= IMAGE HELPERS ================= */
+  const getImageUrl = (path) => {
+    if (!path) return null;
 
-  const imageUrl = getImageUrl(article.featuredImage);
-  const avatarUrl =
-    user?.$id === article.authorId && user?.prefs?.avatar
-      ? getImageUrl(user.prefs.avatar)
-      : getImageUrl(article.authorAvatar); // fallback for others
+    const { data } = supabase.storage
+      .from("article-images")
+      .getPublicUrl(path);
+
+    return data.publicUrl;
+  };
+
+  // ✅ FIX: use new fields
+  const imageUrl = article.thumbnail || getImageUrl(article.featured_image);
+
+const avatarPhoto = article.author_avatar;
+
+console.log(article.author_avatar, "avatar path");
 
   return (
     <div className="border-b border-gray-200 pb-8 mb-8">
-      {/* Author */}
+      
+      {/* ================= AUTHOR ================= */}
       <div className="flex items-center gap-3 text-xs text-gray-500">
         <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200">
-          {avatarUrl && <img src={avatarUrl} alt="" />}
+          {avatarPhoto && <img src={avatarPhoto} alt="author" />}
         </div>
-        <p>{user?.$id === article.authorId ? user.name : article.authorName}</p>
+
+        <p>
+          {user?.id === article.author_id
+            ? user?.user_metadata?.name || "You"
+            : article.author_name}
+        </p>
 
         <span>·</span>
-        <p>{new Date(article.$updatedAt).toDateString()}</p>
+
+        <p>
+          {article.updated_at
+            ? new Date(article.updated_at).toDateString()
+            : ""}
+        </p>
       </div>
 
-      {/* Content */}
+      {/* ================= CONTENT ================= */}
       <Link href={`/read/${article.slug}`}>
         <div className="flex gap-2 mt-2 cursor-pointer">
           <div className="flex-1">
-            <h2
-              className=" dark:text-black text-black
-    text-[16px] md:text-[22px] font-semibold
-  
-    
-    font-creato 
-    line-clamp-2 md:line-clamp-none
-  "
-            >
+            <h2 className="text-[18px] md:text-[22px] font-creato line-clamp-2 md:line-clamp-none">
               {article.title}
             </h2>
+
             <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-              {article.content.replace(/<[^>]*>/g, "").slice(0, 220)}…
+              {article.content
+                ?.replace(/<[^>]*>/g, "")
+                .slice(0, 220)}
+              …
             </p>
           </div>
 
@@ -75,15 +83,16 @@ export default function StoriesCardHorizontal({
         </div>
       </Link>
 
-      {/* Actions */}
+      {/* ================= ACTIONS ================= */}
       <div className="flex gap-8 mt-2 text-gray-500">
+        
+        {/* LIKE */}
         <button
-          onClick={() => onLike(article.$id)} // later rename to onSpark
+          onClick={() => onLike(article.id)} // ✅ FIX
           className="cursor-pointer transition-transform active:scale-95"
-          title="Spark this post"
         >
           {isLiked ? (
-            <PiThumbsUpFill size={20} className="text-black " />
+            <PiThumbsUpFill size={20} className="text-black" />
           ) : (
             <PiThumbsUp
               size={20}
@@ -92,16 +101,18 @@ export default function StoriesCardHorizontal({
           )}
         </button>
 
-
-
+        {/* BOOKMARK */}
         <button
-          onClick={() => onBookmark(article.$id)}
+          onClick={() => onBookmark(article.id)} // ✅ FIX
           className="cursor-pointer"
         >
           {isBookmarked ? (
             <IoBookmark size={18} className="text-black" />
           ) : (
-            <IoBookmarkOutline size={18} className="text-gray-500 hover:text-black" />
+            <IoBookmarkOutline
+              size={18}
+              className="text-gray-500 hover:text-black"
+            />
           )}
         </button>
       </div>
