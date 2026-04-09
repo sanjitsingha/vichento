@@ -35,7 +35,13 @@ const Page = () => {
       try {
         const { data, error } = await supabase
           .from("articles")
-          .select("*")
+          .select(`*,
+            users(
+              id,
+              name,
+              avatar
+          )
+            `)
           .eq("status", "published")
           .order("updated_at", { ascending: false })
           .limit(50);
@@ -63,6 +69,8 @@ const Page = () => {
     router.push(`/search?q=${encodeURIComponent(searchInput.trim())}`);
   };
 
+
+  console.log("Search results:", articles);
   return (
     <div className="w-full px-4 md:px-0">
       <div className="max-w-[800px] mx-auto">
