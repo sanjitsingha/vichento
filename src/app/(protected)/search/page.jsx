@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Query } from "appwrite";
-import { databases } from "@/lib/appwrite";
+import { supabase } from "@/lib/supabaseClient";
 import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
 import useArticleActions from "@/hooks/useArticleActions";
 import { useAuthContext } from "@/context/AuthContext";
@@ -21,7 +20,7 @@ const Page = () => {
   const [searchInput, setSearchInput] = useState(query);
 
   const { likes, bookmarks, toggleLike, toggleBookmark } =
-    useArticleActions(user?.$id);
+    useArticleActions(user?.id);
 
   useEffect(() => {
     if (showSearchUI) {
@@ -34,17 +33,16 @@ const Page = () => {
       setLoading(true);
 
       try {
-        const response = await databases.listDocuments(
-          "693d3d220017a846a1c0", // DATABASE ID
-          "articles", // COLLECTION ID
-          [
-            Query.equal("status", ["published"]),
-            Query.orderDesc("$updatedAt"),
-            Query.limit(50),
-          ]
-        );
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("status", "published")
+          .order("updated_at", { ascending: false })
+          .limit(50);
 
-        const filtered = response.documents.filter((article) =>
+        if (error) throw error;
+
+        const filtered = data.filter((article) =>
           article.title?.toLowerCase().includes(query.toLowerCase())
         );
 
@@ -134,10 +132,10 @@ const Page = () => {
             {!loading &&
               articles.map((article) => (
                 <StoriesCardHorizontal
-                  key={article.$id}
+                  key={article.id}
                   article={article}
-                  isLiked={likes.has(article.$id)}
-                  isBookmarked={bookmarks.has(article.$id)}
+                  isLiked={likes.has(article.id)}
+                  isBookmarked={bookmarks.has(article.id)}
                   onLike={toggleLike}
                   onBookmark={toggleBookmark}
                 />
