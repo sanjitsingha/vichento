@@ -1,31 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import HTMLReactParser from "html-react-parser";
-import { IoBookmark, IoBookmarkOutline } from "react-icons/io5";
-import { IoArrowRedoOutline } from "react-icons/io5";
+import { IoArrowRedoOutline, IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
 import RelatedArticles from "@/app/components/RelatedArticles";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import useUserActions from "@/hooks/useUserActions";
+import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
 
 
 export default function ReadArticlePage() {
   const { slug } = useParams();
   const { user } = useAuthContext();
-  const readTimerRef = useRef(null);
 
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [likesCount, setLikesCount] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeDocId, setLikeDocId] = useState(null);
-
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [bookmarkDocId, setBookmarkDocId] = useState(null);
+  const { likes, bookmarks, toggleLike, toggleBookmark } =
+    useUserActions(user);
+  const isLiked = likes.has(article?.id);
+  const isBookmarked = bookmarks.has(article?.id);
 
   const isAuthor = user?.id === article?.author_id;
 
@@ -44,14 +41,6 @@ export default function ReadArticlePage() {
         if (error) throw error;
 
         setArticle(data);
-
-        // likes count
-        const { count } = await supabase
-          .from("article_likes")
-          .select("*", { count: "exact", head: true })
-          .eq("article_id", data.id);
-
-        setLikesCount(count || 0);
       } catch (err) {
         console.error("Fetch article failed:", err);
       } finally {
@@ -62,131 +51,35 @@ export default function ReadArticlePage() {
     fetchArticle();
   }, [slug]);
 
-  /* ---------------- VIEW TRACKING ---------------- */
+  /* ================= VIEW TRACKING (OPTIMIZED) ================= */
   useEffect(() => {
     if (!article?.id) return;
 
-    const viewed = sessionStorage.getItem(`viewed_${article.id}`);
-    if (viewed) return;
+    const trackView = async () => {
+      const storageKey = `viewed_${article.id}`;
 
-    const addView = async () => {
-      await supabase.from("article_views").insert([
+      // ✅ prevent duplicate (guest + session)
+      const alreadyViewed = localStorage.getItem(storageKey);
+      if (alreadyViewed) return;
+
+      // ✅ mark instantly (optimistic)
+      localStorage.setItem(storageKey, "true");
+
+      const { error } = await supabase.from("views").insert([
         {
           article_id: article.id,
           user_id: user?.id || null,
         },
       ]);
 
-      // optional count update
-      await supabase
-        .from("articles")
-        .update({
-          view_count: (article.view_count || 0) + 1,
-        })
-        .eq("id", article.id);
+      // ignore duplicate error
+      if (error && error.code !== "23505") {
+        console.error("VIEW ERROR:", error);
+      }
     };
 
-    addView();
-    sessionStorage.setItem(`viewed_${article.id}`, "true");
+    trackView();
   }, [article?.id]);
-
-  /* ---------------- LIKE STATUS ---------------- */
-  useEffect(() => {
-    if (!user || !article?.id) return;
-
-    const checkLike = async () => {
-      const { data } = await supabase
-        .from("article_likes")
-        .select("*")
-        .eq("article_id", article.id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (data) {
-        setIsLiked(true);
-        setLikeDocId(data.id);
-      }
-    };
-
-    checkLike();
-  }, [user, article?.id]);
-
-  /* ---------------- BOOKMARK STATUS ---------------- */
-  useEffect(() => {
-    if (!user || !article?.id) return;
-
-    const checkBookmark = async () => {
-      const { data } = await supabase
-        .from("bookmarks")
-        .select("*")
-        .eq("article_id", article.id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (data) {
-        setIsBookmarked(true);
-        setBookmarkDocId(data.id);
-      }
-    };
-
-    checkBookmark();
-  }, [user, article?.id]);
-
-  /* ---------------- LIKE TOGGLE ---------------- */
-  const toggleLike = async () => {
-    if (!user) return alert("Please login to like");
-
-    if (isLiked) {
-      setIsLiked(false);
-      setLikesCount((v) => Math.max(v - 1, 0));
-
-      await supabase.from("article_likes").delete().eq("id", likeDocId);
-      setLikeDocId(null);
-    } else {
-      setIsLiked(true);
-      setLikesCount((v) => v + 1);
-
-      const { data } = await supabase
-        .from("article_likes")
-        .insert([
-          {
-            article_id: article.id,
-            user_id: user.id,
-          },
-        ])
-        .select()
-        .single();
-
-      setLikeDocId(data.id);
-    }
-  };
-
-  /* ---------------- BOOKMARK TOGGLE ---------------- */
-  const toggleBookmark = async () => {
-    if (!user) return alert("Please login to bookmark");
-
-    if (isBookmarked) {
-      setIsBookmarked(false);
-
-      await supabase.from("bookmarks").delete().eq("id", bookmarkDocId);
-      setBookmarkDocId(null);
-    } else {
-      setIsBookmarked(true);
-
-      const { data } = await supabase
-        .from("bookmarks")
-        .insert([
-          {
-            article_id: article.id,
-            user_id: user.id,
-          },
-        ])
-        .select()
-        .single();
-
-      setBookmarkDocId(data.id);
-    }
-  };
 
   /* ---------------- SHARE ---------------- */
   const handleShare = async () => {
@@ -238,36 +131,42 @@ export default function ReadArticlePage() {
 
       {/* AUTHOR */}
       <div className="flex justify-between my-4">
-        <div className="text-gray-500 text-sm flex gap-3 items-center">
+        <div className="text-gray-500 text-sm flex gap-3  items-center">
           <p>{isAuthor ? user?.user_metadata?.name : "Author"}</p>
           <p>{new Date(article.created_at).toDateString()}</p>
         </div>
 
+        {/* ONLY SHARE LEFT */}
         <div className="flex items-center gap-3">
-          {/* LIKE */}
-          <div className="flex items-center gap-2">
-            <button onClick={toggleLike}>
-              {isLiked ? (
-                <PiThumbsUpFill size={20} />
-              ) : (
-                <PiThumbsUp size={20} />
-              )}
-            </button>
-            <span className="text-sm">{likesCount}</span>
-          </div>
-
-          {/* BOOKMARK */}
-          <button onClick={toggleBookmark}>
-            {isBookmarked ? (
-              <IoBookmark size={18} />
+          <button
+            onClick={() => onLike(article.id)}
+            className="cursor-pointer transition-transform active:scale-95"
+          >
+            {isLiked ? (
+              <PiThumbsUpFill size={20} className="text-black" />
             ) : (
-              <IoBookmarkOutline size={18} />
+              <PiThumbsUp
+                size={20}
+                className="text-gray-500 hover:text-black transition-colors"
+              />
+            )}
+          </button>
+          <button
+            onClick={() => toggleBookmark(article.id)}
+            className="cursor-pointer transition-transform active:scale-95"
+          >
+            {isBookmarked ? (
+              <IoBookmark size={18} className="text-black" />
+            ) : (
+              <IoBookmarkOutline
+                size={18}
+                className="text-gray-500 hover:text-black transition-colors"
+              />
             )}
           </button>
 
-          {/* SHARE */}
           <button onClick={handleShare}>
-            <IoArrowRedoOutline size={18} />
+            <IoArrowRedoOutline color="black" size={18} />
           </button>
         </div>
       </div>
@@ -280,7 +179,7 @@ export default function ReadArticlePage() {
         />
       )}
 
-      <div className="prose max-w-none  text-black">
+      <div className="prose max-w-none text-black">
         {HTMLReactParser(article.content)}
       </div>
 
