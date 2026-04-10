@@ -26,12 +26,8 @@ export default function StoriesCardHorizontal({
     return data.publicUrl;
   };
 
-  // ✅ FIX: use new fields
   const imageUrl = article.thumbnail || getImageUrl(article.featured_image);
-
   const avatarPhoto = article.author_avatar;
-
-  console.log(article.author_avatar, "avatar path");
 
   return (
     <div className="border-b border-gray-200 pb-8 mb-8">
@@ -88,7 +84,7 @@ export default function StoriesCardHorizontal({
 
         {/* LIKE */}
         <button
-          onClick={() => onLike(article.id)} // ✅ FIX
+          onClick={() => onLike(article.id)}
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isLiked ? (
@@ -103,15 +99,15 @@ export default function StoriesCardHorizontal({
 
         {/* BOOKMARK */}
         <button
-          onClick={() => onBookmark(article.id)} // ✅ FIX
-          className="cursor-pointer"
+          onClick={() => onBookmark(article.id)}
+          className="cursor-pointer transition-transform active:scale-95"
         >
           {isBookmarked ? (
             <IoBookmark size={18} className="text-black" />
           ) : (
             <IoBookmarkOutline
               size={18}
-              className="text-gray-500 hover:text-black"
+              className="text-gray-500 hover:text-black transition-colors"
             />
           )}
         </button>

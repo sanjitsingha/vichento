@@ -3,48 +3,46 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthContext } from "@/context/AuthContext";
-import useArticleActions from "@/hooks/useArticleActions";
 import ShimmerArticle from "../components/ShimmerArticle";
 import YourReadingLIst from "../components/YourReadingLIst";
 import StoriesCardHorizontal from "../components/StoriesCardHorizontal";
 import ForYou from "../components/ForYou";
 import RecomendedTopics from "../components/RecomendedTopics";
+import useUserActions from "@/hooks/useUserActions";
 
 export default function Homepage() {
   const { user } = useAuthContext();
-
-  // ✅ FIX: use Supabase user.id
-  const { likes, bookmarks, toggleLike, toggleBookmark, version } =
-    useArticleActions(user?.id);
 
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("explore");
 
-  /* ================= FETCH DATA ================= */
+
+  const { likes, bookmarks, toggleLike, toggleBookmark } =
+    useUserActions(user);
+
+  /* ================= FETCH ARTICLES ================= */
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchArticles = async () => {
       try {
         setLoading(true);
 
-        // ✅ Fetch articles + author (users table)
         const { data, error } = await supabase
           .from("articles")
           .select(`
-          *,
-          users (
-            id,
-            name,
-            avatar
-          )
-        `)
+            *,
+            users (
+              id,
+              name,
+              avatar
+            )
+          `)
           .eq("status", "published")
           .order("updated_at", { ascending: false })
           .limit(10);
 
         if (error) throw error;
 
-        // ✅ Transform data for UI (VERY IMPORTANT)
         const formatted = (data || []).map((article) => ({
           ...article,
           author_name: article.users?.name || "Unknown",
@@ -54,7 +52,6 @@ export default function Homepage() {
         }));
 
         setArticles(formatted);
-
       } catch (err) {
         console.error("Homepage fetch error:", err);
       } finally {
@@ -62,32 +59,28 @@ export default function Homepage() {
       }
     };
 
-    fetchData();
+    fetchArticles();
   }, []);
 
-  console.log("Fetched articles:", articles);
+  /* ================= IMAGE HELPER ================= */
+  const getImageUrl = (path) => {
+    if (!path) return null;
 
- const getImageUrl = (path) => {
-  if (!path) return null;
+    if (path.startsWith("http")) return path;
 
-  // ✅ If already full URL → return as is
-  if (path.startsWith("http")) return path;
+    const { data } = supabase.storage
+      .from("article-images")
+      .getPublicUrl(path);
 
-  // ✅ Else generate from Supabase
-  const { data } = supabase.storage
-    .from("article-images")
-    .getPublicUrl(path);
-
-  return data.publicUrl;
-};
-
+    return data.publicUrl;
+  };
 
   /* ================= UI ================= */
   return (
     <div className="w-full">
       <div className="w-full max-w-[1200px] mx-auto px-4 flex gap-10">
 
-        {/* ================= LEFT FEED ================= */}
+        {/* LEFT */}
         <div className="flex-1 pt-4">
 
           {/* Tabs */}
@@ -97,8 +90,8 @@ export default function Homepage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-2 text-sm ${activeTab === tab
-                    ? "text-black border-b-2 border-black"
-                    : "text-gray-500"
+                  ? "text-black border-b-2 border-black"
+                  : "text-gray-500"
                   }`}
               >
                 {tab === "explore" ? "Explore" : "For You"}
@@ -106,7 +99,7 @@ export default function Homepage() {
             ))}
           </div>
 
-          {/* ================= EXPLORE TAB ================= */}
+          {/* EXPLORE */}
           {activeTab === "explore" && (
             <>
               {loading &&
@@ -117,11 +110,10 @@ export default function Homepage() {
               {!loading &&
                 articles.map((article) => (
                   <StoriesCardHorizontal
-                    key={article.id} // ✅ FIX
+                    key={article.id}
                     article={{
                       ...article,
-                      thumbnail: (article.cover_image),
-                      author_avatar: article.author_avatar // ✅ FIX
+                      thumbnail: article.cover_image,
                     }}
                     isLiked={likes.has(article.id)}
                     isBookmarked={bookmarks.has(article.id)}
@@ -132,22 +124,22 @@ export default function Homepage() {
             </>
           )}
 
-          {/* ================= FOR YOU ================= */}
+          {/* FOR YOU */}
           {activeTab === "for-you" && (
             <ForYou
-              user={user}
-              likes={likes}
-              bookmarks={bookmarks}
-              onLike={toggleLike}
-              onBookmark={toggleBookmark}
+            // user={user}
+            // likes={likes}
+            // bookmarks={bookmarks}
+            // onLike={toggleLike}
+            // onBookmark={toggleBookmark}
             />
           )}
         </div>
 
-        {/* ================= RIGHT SIDEBAR ================= */}
+        {/* RIGHT */}
         <div className="hidden lg:block w-[320px] pt-6 border-l border-gray-200 pl-6">
           <div className="sticky top-[80px]">
-            <YourReadingLIst refreshKey={version} />
+            <YourReadingLIst />
             <br />
             <br />
             <RecomendedTopics />

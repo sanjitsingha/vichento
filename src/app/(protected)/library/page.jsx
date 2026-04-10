@@ -5,7 +5,7 @@ import { Query } from "appwrite";
 import { databases } from "@/lib/appwrite";
 import { useAuthContext } from "@/context/AuthContext";
 import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
-import useArticleActions from "@/hooks/useArticleActions";
+import useArticleActions from "@/hooks/useUserActions";
 import ShimmerArticle from "@/app/components/ShimmerArticle";
 import { IoBookmark } from "react-icons/io5";
 
@@ -92,7 +92,7 @@ const Page = () => {
       <div className="max-w-[800px] mx-auto pt-10">
         <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
           <p className="text-[24px] tracking-tight text-black font-creato">Reading List</p>
-          <IoBookmark className="text-gray-500" size={22}/>
+          <IoBookmark className="text-gray-500" size={22} />
         </div>
 
         {articles.map((article) => (

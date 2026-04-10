@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
-import useArticleActions from "@/hooks/useArticleActions";
+import useUserActions from "@/hooks/useUserActions";
 import { useAuthContext } from "@/context/AuthContext";
 import { IoSearchOutline } from "react-icons/io5";
 
@@ -20,7 +20,7 @@ const Page = () => {
   const [searchInput, setSearchInput] = useState(query);
 
   const { likes, bookmarks, toggleLike, toggleBookmark } =
-    useArticleActions(user?.id);
+    useUserActions(user);
 
   useEffect(() => {
     if (showSearchUI) {

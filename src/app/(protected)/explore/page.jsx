@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { databases } from "@/lib/appwrite";
 import { Query } from "appwrite";
 import { useAuthContext } from "@/context/AuthContext";
-import useArticleActions from "@/hooks/useArticleActions";
+import useArticleActions from "@/hooks/useUserActions";
 import ShimmerArticle from "@/app/components/ShimmerArticle";
 import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
 
@@ -106,11 +106,10 @@ export default function Page() {
             <button
               key={cat}
               onClick={() => toggleCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-sm border transition ${
-                active
+              className={`px-4 py-1.5 rounded-full text-sm border transition ${active
                   ? "bg-black text-white border-black"
                   : "bg-white text-gray-700 border-gray-300 hover:border-black"
-              }`}
+                }`}
             >
               {cat}
             </button>
