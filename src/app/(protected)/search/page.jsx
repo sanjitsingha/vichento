@@ -77,7 +77,7 @@ const Page = () => {
         {/* Heading */}
         {!showSearchUI && (
           <div className="mt-6">
-            <p className="text-[26px] md:text-[32px] tracking-tight font-semibold">
+            <p className="text-[26px] md:text-[32px] text-black font-creato">
               Search results for{" "}
               <span className="text-gray-600">"{query}"</span>
             </p>
@@ -141,7 +141,11 @@ const Page = () => {
               articles.map((article) => (
                 <StoriesCardHorizontal
                   key={article.id}
-                  article={article}
+                  article={{
+                    ...article,
+                    author_avatar: article.users.avatar,
+                    author_name: article.users.name,
+                  }}
                   isLiked={likes.has(article.id)}
                   isBookmarked={bookmarks.has(article.id)}
                   onLike={toggleLike}

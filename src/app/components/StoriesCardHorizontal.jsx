@@ -29,13 +29,13 @@ export default function StoriesCardHorizontal({
   // ✅ FIX: use new fields
   const imageUrl = article.thumbnail || getImageUrl(article.featured_image);
 
-const avatarPhoto = article.author_avatar;
+  const avatarPhoto = article.author_avatar;
 
-console.log(article.author_avatar, "avatar path");
+  console.log(article.author_avatar, "avatar path");
 
   return (
     <div className="border-b border-gray-200 pb-8 mb-8">
-      
+
       {/* ================= AUTHOR ================= */}
       <div className="flex items-center gap-3 text-xs text-gray-500">
         <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200">
@@ -61,7 +61,7 @@ console.log(article.author_avatar, "avatar path");
       <Link href={`/read/${article.slug}`}>
         <div className="flex gap-2 mt-2 cursor-pointer">
           <div className="flex-1">
-            <h2 className="text-[18px] md:text-[22px] font-creato line-clamp-2 md:line-clamp-none">
+            <h2 className="text-[18px] md:text-[22px] font-creato text-black line-clamp-2 md:line-clamp-none">
               {article.title}
             </h2>
 
@@ -85,7 +85,7 @@ console.log(article.author_avatar, "avatar path");
 
       {/* ================= ACTIONS ================= */}
       <div className="flex gap-8 mt-2 text-gray-500">
-        
+
         {/* LIKE */}
         <button
           onClick={() => onLike(article.id)} // ✅ FIX
