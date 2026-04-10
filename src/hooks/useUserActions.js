@@ -32,56 +32,80 @@ const useUserActions = (user) => {
     /* ================= ACTIONS ================= */
 
     const toggleLike = async (articleId) => {
+        if (!user) return;
+
         const alreadyLiked = likes.has(articleId);
 
+        // ⚡ 1. INSTANT UI UPDATE
+        setLikes((prev) => {
+            const newSet = new Set(prev);
+            if (alreadyLiked) {
+                newSet.delete(articleId);
+            } else {
+                newSet.add(articleId);
+            }
+            return newSet;
+        });
+
+        // ⚡ 2. BACKGROUND API CALL
         if (alreadyLiked) {
-            await supabase
+            const { error } = await supabase
                 .from("likes")
                 .delete()
                 .eq("user_id", user.id)
                 .eq("article_id", articleId);
 
-            setLikes((prev) => {
-                const newSet = new Set(prev);
-                newSet.delete(articleId);
-                return newSet;
-            });
+            if (error) {
+                console.error("UNLIKE ERROR:", error);
+            }
         } else {
-            await supabase.from("likes").insert([
+            const { error } = await supabase.from("likes").insert([
                 {
                     user_id: user.id,
                     article_id: articleId,
                 },
             ]);
 
-            setLikes((prev) => new Set(prev).add(articleId));
+            if (error) {
+                console.error("LIKE ERROR:", error);
+            }
         }
     };
 
     const toggleBookmark = async (articleId) => {
+        if (!user) return;
+
         const alreadyBookmarked = bookmarks.has(articleId);
 
+        // ⚡ INSTANT UI
+        setBookmarks((prev) => {
+            const newSet = new Set(prev);
+            if (alreadyBookmarked) {
+                newSet.delete(articleId);
+            } else {
+                newSet.add(articleId);
+            }
+            return newSet;
+        });
+
+        // ⚡ BACKGROUND API
         if (alreadyBookmarked) {
-            await supabase
+            const { error } = await supabase
                 .from("bookmarks")
                 .delete()
                 .eq("user_id", user.id)
                 .eq("article_id", articleId);
 
-            setBookmarks((prev) => {
-                const newSet = new Set(prev);
-                newSet.delete(articleId);
-                return newSet;
-            });
+            if (error) console.error(error);
         } else {
-            await supabase.from("bookmarks").insert([
+            const { error } = await supabase.from("bookmarks").insert([
                 {
                     user_id: user.id,
                     article_id: articleId,
                 },
             ]);
 
-            setBookmarks((prev) => new Set(prev).add(articleId));
+            if (error) console.error(error);
         }
     };
 
