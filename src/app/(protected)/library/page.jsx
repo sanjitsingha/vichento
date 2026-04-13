@@ -1,113 +1,92 @@
-"use client";
+'use client'
+import React from 'react'
+import { IoBookmark } from 'react-icons/io5'
+import { ArrowUpRightIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { MdEditNote } from "react-icons/md";
+import { EyeIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { useAuthContext } from '@/context/AuthContext';
 
-import React, { useEffect, useState } from "react";
-import { Query } from "appwrite";
-import { databases } from "@/lib/appwrite";
-import { useAuthContext } from "@/context/AuthContext";
-import StoriesCardHorizontal from "@/app/components/StoriesCardHorizontal";
-import useArticleActions from "@/hooks/useUserActions";
-import ShimmerArticle from "@/app/components/ShimmerArticle";
-import { IoBookmark } from "react-icons/io5";
+const page = () => {
+  const { user } = useAuthContext();
+  const [library, setLibrary] = useState([]);
 
-const DATABASE_ID = "693d3d220017a846a1c0";
-const BOOKMARKS_COLLECTION = "article_bookmarks";
-const ARTICLES_COLLECTION = "articles";
-
-const Page = () => {
-  const { user } = useAuthContext(); // ✅ FIXED
-  const { likes, bookmarks, toggleLike, toggleBookmark, version } =
-    useArticleActions(user?.$id);
-
-  const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.$id) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     const fetchBookmarks = async () => {
-      setLoading(true);
+      const { data, error } = await supabase
+        .from("bookmarks")
+        .select(`
+    id,
+    article_id,
+    articles (
+      id,
+      title,
+      created_at
+    )
+  `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-      try {
-        // 1️⃣ Fetch bookmark docs
-        const bookmarksRes = await databases.listDocuments(
-          DATABASE_ID,
-          BOOKMARKS_COLLECTION,
-          [Query.equal("userId", [user.$id])]
-        );
-
-        if (bookmarksRes.documents.length === 0) {
-          setArticles([]);
-          return;
-        }
-
-        const articleIds = bookmarksRes.documents.map((b) => b.articleId);
-
-        // 2️⃣ Fetch bookmarked articles
-        const articlesRes = await databases.listDocuments(
-          DATABASE_ID,
-          ARTICLES_COLLECTION,
-          [
-            Query.equal("$id", articleIds),
-            Query.equal("status", ["published"]),
-            Query.orderDesc("$updatedAt"),
-          ]
-        );
-
-        setArticles(articlesRes.documents);
-      } catch (err) {
-        console.error("Library fetch error:", err);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.error("Error fetching bookmarks:", error);
+      } else {
+        console.log(data)
+        setLibrary(data);
       }
     };
 
     fetchBookmarks();
-  }, [user?.$id, version]); // ✅ reacts to bookmark add/remove
+  }, [user]);
 
-  /* ================= UI ================= */
 
-  if (loading) {
-    return (
-      <div className="max-w-[800px] mx-auto pt-10">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <ShimmerArticle key={i} />
-        ))}
-      </div>
-    );
-  }
-
-  if (articles.length === 0) {
-    return (
-      <p className="text-sm text-gray-500 text-center mt-20">
-        No bookmarks yet.
-      </p>
-    );
-  }
+  // console.log(library)
 
   return (
-    <div className="w-full">
-      <div className="max-w-[800px] mx-auto pt-10">
-        <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
-          <p className="text-[24px] tracking-tight text-black font-creato">Reading List</p>
-          <IoBookmark className="text-gray-500" size={22} />
+    <div className='w-full md:p-0 p-4'>
+      <div className='mx-auto max-w-[800px] pt-6 md:pt-10'>
+        <div className='w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6'>
+          <p className='text-[24px] tracking-tight text-black font-creato'>Reading List</p>
+          <IoBookmark className='text-gray-500' size={22} />
         </div>
+        <div className='w-full h-fit border border-gray-300 rounded-lg'>
+          <div className='w-full  h-fit p-4 flex'>
+            <div className='h-full hidden md:block w-40 bg-red-300'>
 
-        {articles.map((article) => (
-          <StoriesCardHorizontal
-            key={article.$id}
-            article={article}
-            isLiked={likes.has(article.$id)}
-            isBookmarked={bookmarks.has(article.$id)}
-            onLike={toggleLike}
-            onBookmark={toggleBookmark}
-          />
-        ))}
+            </div>
+            <div className='flex w-full flex-1 items-center'>
+              <div className=' grow'>
+                <h1 className='font-creato text-[18px]   text-black'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Temporibus, consectetur?</h1>
+                <p className='font-creato text-[11px] text-gray-500 mt-1'>SANJIT SINGHA  |  25 MARCH 2026</p>
+              </div>
+              {/* <div className='flex gap-6 w-fit'>
+                <Link className='cursor-pointer' href={'/'}>
+                  <EyeIcon className='text-gray-400 hover:text-black transition-all duration-200 ease-in-out w-[18px] h-[18px]' />
+                </Link>
+                <Link className='cursor-pointer' href={'/'}>
+                  <MdEditNote className='text-gray-400 hover:text-black transition-all duration-200 ease-in-out w-[22px] h-[22px]' />
+                </Link>
+                <Link className='cursor-pointer' href={'/'}>
+                  <TrashIcon className='text-gray-400 hover:text-black transition-all duration-200 ease-in-out w-[16px] h-[16px]' />
+                </Link>
+              </div> */}
+              <div className='flex gap-6 px-6 w-fit'>
+                <Link className='cursor-pointer hover:bg-gray-300 rounded-full transition-all duration-200 ease-in-out p-2' href={'/'}>
+                  <ArrowUpRightIcon className='text-gray-400 hover:text-black transition-all duration-200 ease-in-out w-[18px] h-[18px]' />
+                </Link>
+
+              </div>
+            </div>
+          </div>
+          <hr className='w-full border-gray-300' />
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default page
