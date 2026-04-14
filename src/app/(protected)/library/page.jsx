@@ -35,7 +35,7 @@ const page = () => {
       if (error) {
         console.error("Error fetching bookmarks:", error);
       } else {
-        console.log(data)
+        // console.log(data)
         setLibrary(data);
       }
     };
