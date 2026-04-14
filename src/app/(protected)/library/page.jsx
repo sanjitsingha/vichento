@@ -1,15 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { IoBookmark } from "react-icons/io5";
-import { ArrowUpRightIcon } from "@heroicons/react/24/outline";
+import { ArrowUpRightIcon, EllipsisHorizontalIcon, BookmarkSlashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuthContext } from "@/context/AuthContext";
+import Image from "next/image";
 
 const Page = () => {
   const { user } = useAuthContext();
   const [library, setLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeMenu, setActiveMenu] = useState(null);
 
   // 🔹 Fetch Bookmarks
   useEffect(() => {
@@ -26,7 +28,9 @@ const Page = () => {
           articles (
             id,
             title,
+            slug,
             author_id,
+            cover_image,
             created_at,
             users!fk_author (
               id,
@@ -48,6 +52,29 @@ const Page = () => {
 
     fetchBookmarks();
   }, [user]);
+
+  console.log(library)
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveMenu(null);
+    };
+
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleRemoveBookmark = async (bookmarkId) => {
+    const { error } = await supabase
+      .from("bookmarks")
+      .delete()
+      .eq("id", bookmarkId);
+
+    if (!error) {
+      setLibrary((prev) => prev.filter((item) => item.id !== bookmarkId));
+      setActiveMenu(null); // 👈 close dropdown
+    }
+  };
 
   // 🔹 Skeleton Component
   const Skeleton = () => (
@@ -99,18 +126,28 @@ const Page = () => {
           {!loading &&
             library.map((item) => (
               <div key={item.id}>
-                <div className="w-full h-fit p-4 flex">
+                <div className="w-full h-fit px-2 py-4 md:p-4 flex">
 
                   {/* Thumbnail placeholder */}
-                  <div className="hidden md:block w-40 h-20 bg-gray-100 rounded"></div>
+                  <div className="overflow-hidden object-cover rounded w-[120px] h-[60px] md:w-[160px] md:h-[100px]">
 
-                  <div className="flex w-full flex-1 items-center ml-4">
+                    <Image
+                      src={item.articles?.cover_image || "/placeholder.png"}
+                      width={200}
+                      height={140}
+                      alt={item.articles?.title}
+                      className="object-fit"
+                    />
+                  </div>
+
+
+                  <div className="flex w-full flex-1 items-center md:ml-6 ml-2">
                     <div className="grow">
 
                       {/* Title */}
-                      <h1 className="font-creato text-[18px] text-black">
+                      <Link href={`/read/${item.articles?.slug}`} className="font-creato md:text-[20px] font-medium text-black">
                         {item.articles?.title}
-                      </h1>
+                      </Link>
 
                       {/* Author + Date */}
                       <p className="font-creato text-[11px] text-gray-500 mt-1">
@@ -126,14 +163,49 @@ const Page = () => {
                     </div>
 
                     {/* Action */}
-                    <div className="flex gap-6 px-6 w-fit">
+                    <div className="flex gap-6 md:px-6 w-fit">
                       <Link
-                        href={`/article/${item.article_id}`}
-                        className="hover:bg-gray-300 rounded-full p-2 transition"
+                        href={`/read/${item.articles?.slug}`}
+                        className="hover:bg-gray-300 rounded-full p-2 transition hidden md:block bg-gray-200"
                       >
-                        <ArrowUpRightIcon className="w-[18px] h-[18px] text-gray-400 hover:text-black" />
+                        <ArrowUpRightIcon className="w-[18px] h-[18px] text-gray-600 hover:text-black" />
                       </Link>
+
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenu(activeMenu === item.id ? null : item.id);
+                          }}
+                          className="p-2 bg-gray-200 rounded-full"
+                        >
+                          <EllipsisHorizontalIcon className="w-[20px] h-[20px] text-gray-600" />
+                        </button>
+
+                        {/* 🔥 Tooltip Menu */}
+                        {activeMenu === item.id && (
+                          <div className="absolute right-0 top-12 w-44 bg-white border border-gray-200 rounded-lg shadow-md z-50">
+
+                            <Link
+                              href={`/read/${item.articles?.slug}`}
+                              className="block px-4 py-2 text-sm hover:bg-gray-100"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              Share
+                            </Link>
+
+                            <button
+                              onClick={() => handleRemoveBookmark(item.id)}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
+                            >
+                              Remove Bookmark
+                            </button>
+
+                          </div>
+                        )}
+                      </div>
                     </div>
+
                   </div>
                 </div>
 

@@ -1,222 +1,126 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { Query } from "appwrite";
-import { databases, storage } from "@/lib/appwrite";
 import { TbDots } from "react-icons/tb";
 import {
   TrashIcon,
-  PencilSquareIcon,
-  EyeIcon,
+  ArrowTrendingUpIcon,
+  EllipsisHorizontalIcon,
+  ArrowUpLeftIcon,
+  ArrowUturnLeftIcon
 } from "@heroicons/react/24/outline";
 import Modal from "@/app/components/ui/Modal";
-const BUCKET_ID = "article-images";
 import Link from "next/link";
 import { IoBookmark } from "react-icons/io5";
 import { QueueListIcon as QueueSolid } from "@heroicons/react/24/solid";
+import { PiShareFatThin } from "react-icons/pi";
+
+import { supabase } from "@/lib/supabaseClient";
+import Image from "next/image";
 
 const page = () => {
-  const [activeTab, setActiveTab] = useState("drafts");
+  const [activeTab, setActiveTab] = useState("published");
   const { user } = useAuthContext();
   const [drafts, setDrafts] = useState([]);
   const [publishedArticles, setPublishedArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDraftId, setSelectedDraftId] = useState(null);
-  const [deleteDraftModal, setDeleteDraftModal] = useState(false);
-  const [deletePublishedModal, setDeletePublishedModal] = useState(false);
 
-  // ✅ NEW STATE (for mobile menu)
-  const [openMenuId, setOpenMenuId] = useState(null);
+
+  const [activeMenu, setActiveMenu] = useState(null);
 
   useEffect(() => {
-    if (!user?.$id) return;
-
-    const fetchDrafts = async () => {
-      try {
-        const response = await databases.listDocuments(
-          "693d3d220017a846a1c0",
-          "drafts",
-          [Query.equal("authorId", [user.$id]), Query.orderDesc("$updatedAt")]
-        );
-        setDrafts(response.documents);
-      } catch (error) {
-        console.error("Error fetching drafts:", error);
-      } finally {
-        setLoading(false);
-      }
+    const handleClickOutside = () => {
+      setActiveMenu(null);
     };
 
-    fetchDrafts();
-  }, [user?.$id]);
-console.log("Drafts:", drafts);
-  useEffect(() => {
-    if (!user?.$id) return;
-
-    const fetchPublishedArticles = async () => {
-      try {
-        const response = await databases.listDocuments(
-          "693d3d220017a846a1c0",
-          "articles",
-          [
-            Query.equal("authorId", [user.$id]),
-            Query.equal("status", "published"),
-            Query.orderDesc("$updatedAt"),
-          ]
-        );
-        setPublishedArticles(response.documents);
-      } catch (error) {
-        console.error("Error fetching published articles:", error);
-      }
-    };
-
-    fetchPublishedArticles();
-  }, [user?.$id]);
-
-  const handleDeleteDraft = async () => {
-    if (!selectedDraftId) return;
-
-    try {
-      await databases.deleteDocument(
-        "693d3d220017a846a1c0",
-        "drafts",
-        selectedDraftId
-      );
-
-      setDrafts((prev) =>
-        prev.filter((draft) => draft.$id !== selectedDraftId)
-      );
-
-      setDeleteDraftModal(false);
-      setSelectedDraftId(null);
-    } catch (error) {
-      console.error("Delete draft error:", error);
-      alert("Failed to delete draft");
-    }
-  };
-
-  const handleDeletePublished = async () => {
-    if (!selectedDraftId) return;
-
-    try {
-      await databases.deleteDocument(
-        "693d3d220017a846a1c0",
-        "articles",
-        selectedDraftId
-      );
-
-      setPublishedArticles((prev) =>
-        prev.filter((item) => item.$id !== selectedDraftId)
-      );
-
-      setDeletePublishedModal(false);
-      setSelectedDraftId(null);
-    } catch (error) {
-      console.error("Delete published error:", error);
-      alert("Failed to delete article");
-    }
-  };
-
-  const getImageUrl = (fileId) =>
-    fileId ? storage.getFileView(BUCKET_ID, fileId).toString() : null;
-
-  // ✅ close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = () => setOpenMenuId(null);
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchArticles = async () => {
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("articles")
+        .select("*")
+        .eq("author_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching articles:", error);
+        setLoading(false);
+        return;
+      }
+
+      // ✅ SEGREGATE DATA HERE
+      const draftsData = data.filter((item) => item.status === "draft");
+      const publishedData = data.filter((item) => item.status === "published");
+
+      setDrafts(draftsData);
+      setPublishedArticles(publishedData);
+
+      setLoading(false);
+    };
+
+    fetchArticles();
+  }, [user]);
+
+
+  console.log(publishedArticles)
+
+
+
+  // ✅ close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenu(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+
+
   return (
     <div className="w-full p-4 md:p-0">
       <div className="max-w-[800px] mx-auto pt-10">
-         <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
-                  <p className="text-[24px] tracking-tight text-black font-creato">Stories</p>
-                  <QueueSolid className="text-gray-500 size-6"  />
-                </div>
+        <div className="w-full flex justify-between items-center pb-1 border-b border-gray-300 mb-4">
+          <p className="text-[24px] tracking-tight text-black font-creato">Stories</p>
+          <QueueSolid className="text-gray-500 size-6" />
+        </div>
 
         {/* Tabs */}
-        <div className="mt-6 border-b border-gray-200 flex gap-6">
+        <div className="mt-3 border-gray-300  border-[.5px] rounded py-2 w-fit  px-6 flex gap-6">
           <button
             onClick={() => setActiveTab("drafts")}
-            className={`pb-2 text-[14px] ${
-              activeTab === "drafts"
-                ? "text-black border-b-2 border-black"
-                : "text-gray-500"
-            }`}
+            className={`text-[14px] ${activeTab === "drafts"
+              ? "text-black font-bold "
+              : "text-gray-500"
+              }`}
           >
             Drafts
           </button>
 
           <button
             onClick={() => setActiveTab("published")}
-            className={`pb-2 text-[14px] ${
-              activeTab === "published"
-                ? "text-black border-b-2 border-black"
-                : "text-gray-500"
-            }`}
+            className={`text-[14px] ${activeTab === "published"
+              ? "text-black font-bold"
+              : "text-gray-500"
+              }`}
           >
             Published
           </button>
         </div>
-{activeTab === "drafts" && (
-  <div className="mt-4">
-    {loading && (
-      <p className="text-sm text-gray-500">Loading Drafts</p>
-    )}
-
-    <div className="flex flex-col divide-y divide-gray-200">
-      {drafts.map((draft) => {
-        const imageUrl = getImageUrl(draft.featuredImage);
-
-        return (
-          <div
-            key={draft.$id}
-            className="flex items-center justify-between md:px-2 py-3 rounded"
-          >
-            {/* LEFT */}
-            <div className="flex items-center gap-4">
-              {imageUrl && (
-                <img
-                  src={imageUrl}
-                  alt="thumbnail"
-                  className="w-20 h-16 object-cover rounded-lg"
-                />
-              )}
-
-              <div>
-                <p className="text-[17px] line-clamp-1 text-black font-medium">
-                  {draft.title || "Untitled"}
-                </p>
-
-                <p className="text-[12px] text-gray-500 mt-1">
-                  Last edited{" "}
-                  {new Date(draft.$updatedAt).toLocaleDateString()}
-                </p>
+        {activeTab === "drafts" && (
+          <div className="w-full border border-gray-300 rounded-md mt-6">
+            {drafts.map((draft) => (
+              <div key={draft.id} className="p-4">
+                <p>{draft.title}</p>
               </div>
-            </div>
-
-            {/* RIGHT (keep simple for now) */}
-            <div className="flex text-black gap-4 items-center">
-              <Link href={`/write/${draft.$id}?type=draft`}>
-                Edit
-              </Link>
-
-              <button
-                onClick={() => {
-                  setSelectedDraftId(draft.$id);
-                  setDeleteDraftModal(true);
-                }}
-                className="text-red-500"
-              >
-                Delete
-              </button>
-            </div>
+            ))}
           </div>
-        );
-      })}
-    </div>
-  </div>
-)}
+        )}
         {/* CONTENT */}
         <div className="mt-6">
           {activeTab === "published" && (
@@ -225,146 +129,83 @@ console.log("Drafts:", drafts);
                 <p className="text-sm text-gray-500">Loading Articles</p>
               )}
 
-              <div className="flex flex-col divide-y divide-gray-200">
-                {publishedArticles.map((article) => {
-                  const imageUrl = getImageUrl(article.featuredImage);
-
-                  return (
-                    <div
-                      key={article.$id}
-                      className="flex items-center justify-between md:px-2  py-3 rounded"
-                    >
-                      {/* LEFT */}
-                      <div className="flex items-center gap-4">
-                        {imageUrl && (
-                          <img
-                            src={imageUrl}
-                            alt="thumbnail"
-                            className="w-20 h-16 object-cover rounded-lg"
-                          />
-                        )}
-
-                        <div>
-                          <p className="text-[17px] line-clamp-1 text-black font-medium">
-                            {article.title || "Untitled"}
-                          </p>
-
-                          <p className="text-[12px] text-gray-500 mt-1">
-                            Last edited{" "}
-                            {new Date(
-                              article.$updatedAt
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
+              <div className="w-full border border-gray-300 rounded-md mt-6">
+                {publishedArticles.map((publishedArticle) => (
+                  <div key={publishedArticle.id} className="p-4 flex items-center border-b border-gray-300 gap-4">
+                    <div>
+                      <Image
+                        src={publishedArticle.cover_image || "/placeholder.png"}
+                        width={120}
+                        height={90}
+                        alt={publishedArticle.title}
+                        className="object-cover rounded"
+                      />
+                    </div>
+                    <div className="w-full flex items-center justify-between">
+                      <div>
+                        <p className="font-creato text-[18px] text-black font-medium">{publishedArticle.title}</p>
+                        <p className="font-creato text-[12px] text-gray-500">{new Date(publishedArticle.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}</p>
                       </div>
 
-                      {/* RIGHT */}
-                      <div className="flex items-center">
-                        {/* DESKTOP */}
-                        <div className="hidden md:flex gap-6 items-center">
-                          <Link
-                            href={`/read/${article.slug}`}
-                            className="border-r pr-6 border-gray-300"
-                          >
-                            <EyeIcon className="size-5" />
-                          </Link>
+                      <div className="relative">
 
-                          <Link
-                            href={`/write/${article.$id}?type=published`}
-                            className="cursor-pointer border-r pr-6 border-gray-300"
-                          >
-                            <PencilSquareIcon className="w-5 h-5 text-gray-700" />
-                          </Link>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenu(activeMenu === publishedArticle.id ? null : publishedArticle.id);
+                          }}
+                          title="menu" className=" cursor-pointer">
+                          <EllipsisHorizontalIcon className="w-[18px] h-[18px] text-gray-600 hover:text-black" />
+                        </button>
+                        {activeMenu === publishedArticle.id && (
+                          <div className="absolute right-0 top-8 w-44 bg-white border border-gray-300 rounded  z-50">
+                            <Link
+                              href={`/read/${publishedArticle.slug}`}
+                              className="flex px-4 py-2 text-sm gap-4  font-medium"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <ArrowTrendingUpIcon className="w-4 h-4 text-gray-500" /> <p className="text-gray-500">Stats</p>
+                            </Link>
+                            <Link
+                              href={`/read/${publishedArticle.slug}`}
+                              className="flex px-4 py-2 text-sm gap-4  font-medium border-b border-gray-300"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <PiShareFatThin className="w-4 h-4 text-gray-500" /> <p className="text-gray-500">Share</p>
+                            </Link>
+                            <Link
+                              href={`/read/${publishedArticle.slug}`}
+                              className="flex px-4 py-2 text-sm gap-4  font-medium"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <ArrowUturnLeftIcon className="w-4 h-4 text-red-500" /> <p className="text-red-500">Unplublish</p>
+                            </Link>
+                            <Link
+                              href={`/read/${publishedArticle.slug}`}
+                              className="flex px-4 py-2 text-sm gap-4  font-medium"
+                              onClick={() => setActiveMenu(null)}
+                            >
+                              <TrashIcon className="w-4 h-4 text-red-500" /> <p className="text-red-500">Delete</p>
+                            </Link>
 
-                          <button
-                            onClick={() => {
-                              setSelectedDraftId(article.$id);
-                              setDeletePublishedModal(true);
-                            }}
-                          >
-                            <TrashIcon className="w-5 h-5 text-red-500" />
-                          </button>
-                        </div>
 
-                        {/* MOBILE */}
-                        <div className="relative md:hidden">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId(
-                                openMenuId === article.$id
-                                  ? null
-                                  : article.$id
-                              );
-                            }}
-                          >
-                            <TbDots className="w-6 h-6 rotate-90 text-gray-600" />
-                          </button>
-
-                          {openMenuId === article.$id && (
-                            <div className="absolute right-0 mt-2 w-36 text-black bg-white border border-gray-200 rounded-md shadow-md z-50">
-                              <Link
-                                href={`/read/${article.slug}`}
-                                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
-                              >
-                                <EyeIcon className="w-4 h-4" />
-                                View
-                              </Link>
-
-                              <Link
-                                href={`/write/${article.$id}?type=published`}
-                                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
-                              >
-                                <PencilSquareIcon className="w-4 h-4" />
-                                Edit
-                              </Link>
-
-                              <button
-                                onClick={() => {
-                                  setSelectedDraftId(article.$id);
-                                  setDeletePublishedModal(true);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-gray-100"
-                              >
-                                <TrashIcon className="w-4 h-4" />
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* DELETE MODAL */}
-      <Modal open={deletePublishedModal} onOpenChange={setDeletePublishedModal}>
-        <h2 className="text-[16px] mb-4">Delete Story</h2>
-        <p className="text-[14px] text-black/60">
-          Clicking delete will permanently remove this story. This action cannot
-          be undone.
-        </p>
-        <div className="flex gap-2 mt-4 justify-end">
-          <button
-            onClick={() => setDeletePublishedModal(false)}
-            className="px-4 py-1 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-1 bg-red-600 rounded text-white"
-            onClick={handleDeletePublished}
-          >
-            Delete
-          </button>
-        </div>
-      </Modal>
+
     </div>
   );
 };
