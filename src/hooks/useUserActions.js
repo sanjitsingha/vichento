@@ -2,8 +2,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 const useUserActions = (user) => {
-    const [likes, setLikes] = useState(new Set());
-    const [bookmarks, setBookmarks] = useState(new Set());
+    const [likes, setLikes] = useState(() => {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("likes");
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        }
+        return new Set();
+    });
+
+    const [bookmarks, setBookmarks] = useState(() => {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("bookmarks");
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        }
+        return new Set();
+    });
 
     /* ================= FETCH ================= */
     useEffect(() => {
@@ -24,6 +37,16 @@ const useUserActions = (user) => {
 
             setLikes(new Set(likeData?.map((l) => l.article_id)));
             setBookmarks(new Set(bookmarkData?.map((b) => b.article_id)));
+            // ✅ sync localStorage
+            localStorage.setItem(
+                "likes",
+                JSON.stringify(likeData?.map((l) => l.article_id) || [])
+            );
+
+            localStorage.setItem(
+                "bookmarks",
+                JSON.stringify(bookmarkData?.map((b) => b.article_id) || [])
+            );
         };
 
         fetchActions();
@@ -44,6 +67,8 @@ const useUserActions = (user) => {
             } else {
                 newSet.add(articleId);
             }
+            // ✅ update localStorage
+            localStorage.setItem("likes", JSON.stringify([...newSet]));
             return newSet;
         });
 
@@ -85,6 +110,9 @@ const useUserActions = (user) => {
             } else {
                 newSet.add(articleId);
             }
+            // ✅ update localStorage
+            localStorage.setItem("bookmarks", JSON.stringify([...newSet]));
+
             return newSet;
         });
 

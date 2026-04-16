@@ -129,14 +129,13 @@ const Page = () => {
                 <div className="w-full h-fit px-2 py-4 md:p-4 flex">
 
                   {/* Thumbnail placeholder */}
-                  <div className="overflow-hidden object-cover rounded w-[120px] h-[60px] md:w-[160px] md:h-[100px]">
-
+                  <div>
                     <Image
                       src={item.articles?.cover_image || "/placeholder.png"}
-                      width={200}
-                      height={140}
+                      width={120}
+                      height={90}
                       alt={item.articles?.title}
-                      className="object-fit"
+                      className="object-cover rounded"
                     />
                   </div>
 
