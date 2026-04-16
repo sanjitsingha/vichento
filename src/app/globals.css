@@ -4,6 +4,7 @@
   --background: #ffffff;
   --foreground: #171717;
 }
+
 @font-face {
   font-family: 'CreatoDisplay';
   src: url('/fonts/CreatoDisplay-Regular.woff2') format('woff2');
@@ -29,7 +30,7 @@
 }
 
 @theme {
- 
+
   --color-primary: #dc3d24;
   --color-secondary: #232b2b;
 }
@@ -60,6 +61,7 @@
   --tw-prose-bold: #030712;
   --tw-prose-quotes: #374151;
 }
+
 /* Headings */
 .prose h1 {
   font-size: 2.4rem;
@@ -87,9 +89,11 @@
   border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
 }
-.prose hr{
+
+.prose hr {
   opacity: 20%;
 }
+
 .prose h2 {
   font-size: 1.85rem;
   font-weight: 600;
@@ -97,7 +101,7 @@
 }
 
 .prose h3 {
- 
+
   font-weight: 600;
 }
 
@@ -151,6 +155,7 @@ body {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -161,10 +166,12 @@ body {
     opacity: 0;
     transform: scale(0.95);
   }
+
   50% {
     opacity: 1;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(1.05);
@@ -173,4 +180,20 @@ body {
 
 .animate-fade {
   animation: fadeInOut 2s ease-in-out forwards;
+}
+
+@keyframes dropdownFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.animate-dropdown {
+  animation: dropdownFade 0.20s ease-in-out;
 }

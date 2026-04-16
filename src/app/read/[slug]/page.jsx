@@ -9,7 +9,16 @@ import RelatedArticles from "@/app/components/RelatedArticles";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import useUserActions from "@/hooks/useUserActions";
-import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
+import { PiThumbsDown, PiThumbsDownFill, PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
+import Image from "next/image";
+import { TbBookmarks, TbBookmarksFilled } from "react-icons/tb";
+import { AiFillLike, AiOutlineLike, AiFillDislike, AiOutlineDislike } from "react-icons/ai";
+import { BsThreeDots } from "react-icons/bs";
+import { PiArrowBendDoubleUpRight } from "react-icons/pi";
+import { PiSealWarningLight } from "react-icons/pi";
+
+
+
 
 
 export default function ReadArticlePage() {
@@ -25,6 +34,20 @@ export default function ReadArticlePage() {
   const isBookmarked = bookmarks.has(article?.id);
 
   const isAuthor = user?.id === article?.author_id;
+
+
+
+
+  const [activeMenu, setActiveMenu] = useState(null);
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveMenu(null);
+    };
+
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
 
   /* ---------------- FETCH ARTICLE ---------------- */
   useEffect(() => {
@@ -97,6 +120,9 @@ export default function ReadArticlePage() {
     }
   };
 
+
+  const avatar = user?.user_metadata?.avatar_url;
+
   /* ---------------- LOADING ---------------- */
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
@@ -121,60 +147,120 @@ export default function ReadArticlePage() {
 
   return (
     <div className="max-w-[800px] p-4 md:p-0 mx-auto pt-2">
-      <h1 className="text-2xl md:text-[34px] font-creato font-semibold text-black mt-8">
+      <h1 className="text-2xl md:text-[34px] font-creato font-semibold text-black my-8">
         {article.title}
       </h1>
 
-      <p className="text-lg font-creato mt-5 text-black/60">
+      <p className="text-lg font-creato  text-black/60">
         {article.meta_description}
       </p>
 
       {/* AUTHOR */}
-      <div className="flex justify-between my-4">
+      <div className="flex justify-between my-8">
         <div className="text-gray-500 text-sm flex gap-3  items-center">
+          <Image
+            src={avatar || "/placeholder.png"}
+            width={30}
+            height={30}
+            objectFit="cover"
+            alt={article.author_name}
+            className="rounded-full"
+          />
           <p>{isAuthor ? user?.user_metadata?.name : "Author"}</p>
           <p>{new Date(article.created_at).toDateString()}</p>
         </div>
 
-        {/* ONLY SHARE LEFT */}
-        <div className="flex items-center gap-3">
+      </div>
+      <div className="w-full h-10 flex justify-between items-center">
+        <div className="flex items-center gap-8">
           <button
+            title="like"
             onClick={() => onLike(article.id)}
-            className="cursor-pointer transition-transform active:scale-95"
+            className="cursor-pointer transition-transform active:scale-85"
           >
             {isLiked ? (
-              <PiThumbsUpFill size={20} className="text-black" />
+              <AiFillLike size={23} className="text-black" />
             ) : (
-              <PiThumbsUp
-                size={20}
+              <AiOutlineLike
+                size={23}
                 className="text-gray-500 hover:text-black transition-colors"
               />
             )}
           </button>
           <button
-            onClick={() => toggleBookmark(article.id)}
-            className="cursor-pointer transition-transform active:scale-95"
+            title="dislike"
+            onClick={() => onLike(article.id)}
+            className="cursor-pointer  transition-transform active:scale-85"
           >
-            {isBookmarked ? (
-              <IoBookmark size={18} className="text-black" />
+            {isLiked ? (
+              <AiFillDislike size={23} className="text-black" />
             ) : (
-              <IoBookmarkOutline
-                size={18}
+              <AiOutlineDislike
+
+                size={23}
                 className="text-gray-500 hover:text-black transition-colors"
               />
             )}
           </button>
 
-          <button onClick={handleShare}>
-            <IoArrowRedoOutline color="black" size={18} />
-          </button>
         </div>
+        <div className="flex items-center gap-10">
+          <button
+            title="bookmark"
+            onClick={() => toggleBookmark(article.id)}
+            className="cursor-pointer transition-transform active:scale-85"
+          >
+            {isBookmarked ? (
+              <TbBookmarksFilled size={25} className="text-black" />
+            ) : (
+              <TbBookmarks
+                size={25}
+                className="text-gray-500 hover:text-black transition-colors"
+              />
+            )}
+          </button>
+
+
+          <div className="relative">
+            <button className="cursor-pointer  active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
+              e.stopPropagation();
+              setActiveMenu(activeMenu === article.id ? null : article.id);
+            }}>
+              <BsThreeDots size={25} />
+            </button>
+            {activeMenu === article.id && (
+              <div className="absolute animate-dropdown left-[-115px] top-12   bg-white h-80 w-60 rounded shadow-lg border-gray-300 border p-4">
+                <button
+                  onClick={handleShare}
+                  className="cursor-pointer text-gray-500 flex items-center gap-3"
+                >
+                  <PiArrowBendDoubleUpRight size={18} />
+                  <p className="font-creato text-sm"> Share</p>
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="cursor-pointer mt-4 text-red-500 flex items-center gap-3"
+                >
+                  <PiSealWarningLight size={18} />
+                  <p className="font-creato text-sm"> Report</p>
+                </button>
+
+              </div>
+            )}
+          </div>
+
+        </div>
+
       </div>
 
       {imageUrl && (
-        <img
+        <Image
+          width={700}
+          height={500}
+          priority
+          objectFit="cover"
           src={imageUrl}
-          className="w-full rounded my-4"
+          className="w-full rounded my-8"
           alt={article.title}
         />
       )}

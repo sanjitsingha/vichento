@@ -1,17 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "@/context/AuthContext";
-import { TbDots } from "react-icons/tb";
 import {
   TrashIcon,
   ArrowTrendingUpIcon,
   EllipsisHorizontalIcon,
-  ArrowUpLeftIcon,
   ArrowUturnLeftIcon
 } from "@heroicons/react/24/outline";
-import Modal from "@/app/components/ui/Modal";
 import Link from "next/link";
-import { IoBookmark } from "react-icons/io5";
 import { QueueListIcon as QueueSolid } from "@heroicons/react/24/solid";
 import { PiShareFatThin } from "react-icons/pi";
 
@@ -28,14 +24,13 @@ const page = () => {
 
   const [activeMenu, setActiveMenu] = useState(null);
 
+  // ✅ close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = () => {
-      setActiveMenu(null);
-    };
-
+    const handleClickOutside = () => setActiveMenu(null);
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
+
 
   useEffect(() => {
     if (!user) return;
@@ -69,16 +64,10 @@ const page = () => {
   }, [user]);
 
 
-  console.log(publishedArticles)
+  // console.log(publishedArticles)
 
 
 
-  // ✅ close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = () => setActiveMenu(null);
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
-  }, []);
 
 
 
