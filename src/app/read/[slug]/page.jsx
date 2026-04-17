@@ -172,22 +172,29 @@ export default function ReadArticlePage() {
 
       </div>
       <div className="w-full h-10 gap-8 flex md:justify-between items-center">
-        <div className="flex items-center bg-gray-100 px-5 border border-gray-300 py-2 rounded-full gap-2">
+        <div className="flex items-center bg-white px-5 border border-gray-200 py-2 rounded-full gap-2">
           <button
             title="like"
             onClick={() => onLike(article.id)}
-            className="cursor-pointer transition-transform active:scale-85"
+            className="cursor-pointer transition-transform active:scale-85 flex items-center gap-2"
           >
-            {isLiked ? (
-              <AiFillLike size={23} className="text-black" />
-            ) : (
-              <AiOutlineLike
-                size={23}
-                className="text-gray-500 hover:text-black transition-colors"
-              />
-            )}
+            <span>
+              {isLiked ? (
+                <AiFillLike size={23} className="text-black" />
+              ) : (
+                <AiOutlineLike
+                  size={23}
+                  className="text-gray-500 hover:text-black transition-colors"
+                />
+
+              )}
+            </span>
+            <p className="text-sm font-creato text-gray-500">Like</p>
           </button>
-          <p className="font-creato text-gray-500">Like</p>
+
+
+          {/* DisLike Button for Desktop */}
+
           {/* <button
             title="dislike"
             onClick={() => onLike(article.id)}
@@ -223,7 +230,7 @@ export default function ReadArticlePage() {
 
 
           <div className="relative">
-            <div className="flex items-center gap-2  bg-gray-100 border-gray-300 px-4 py-2 border rounded-full ">
+            <div className="flex items-center gap-2 md:hidden bg-gray-100 border-gray-300 px-4 py-2 border rounded-full ">
               <button className="cursor-pointer active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
                 e.stopPropagation();
                 setActiveMenu(activeMenu === article.id ? null : article.id);

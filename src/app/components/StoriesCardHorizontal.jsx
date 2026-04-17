@@ -57,7 +57,7 @@ export default function StoriesCardHorizontal({
       <Link href={`/read/${article.slug}`}>
         <div className="flex gap-2 mt-2 cursor-pointer">
           <div className="flex-1">
-            <h2 className="text-[18px] md:text-[22px] font-creato text-black line-clamp-2 md:line-clamp-none">
+            <h2 className="text-[22px] md:text-[24px] font-creato font-semibold text-black line-clamp-2 md:line-clamp-none">
               {article.title}
             </h2>
 
