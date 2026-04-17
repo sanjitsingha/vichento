@@ -171,8 +171,8 @@ export default function ReadArticlePage() {
         </div>
 
       </div>
-      <div className="w-full h-10 flex justify-between items-center">
-        <div className="flex items-center gap-8">
+      <div className="w-full h-10 gap-8 flex md:justify-between items-center">
+        <div className="flex items-center bg-gray-100 px-5 border border-gray-300 py-2 rounded-full gap-2">
           <button
             title="like"
             onClick={() => onLike(article.id)}
@@ -187,7 +187,8 @@ export default function ReadArticlePage() {
               />
             )}
           </button>
-          <button
+          <p className="font-creato text-gray-500">Like</p>
+          {/* <button
             title="dislike"
             onClick={() => onLike(article.id)}
             className="cursor-pointer  transition-transform active:scale-85"
@@ -201,14 +202,14 @@ export default function ReadArticlePage() {
                 className="text-gray-500 hover:text-black transition-colors"
               />
             )}
-          </button>
+          </button> */}
 
         </div>
         <div className="flex items-center gap-10">
           <button
             title="bookmark"
             onClick={() => toggleBookmark(article.id)}
-            className="cursor-pointer transition-transform active:scale-85"
+            className="cursor-pointer transition-transform hidden active:scale-85"
           >
             {isBookmarked ? (
               <TbBookmarksFilled size={25} className="text-black" />
@@ -222,20 +223,39 @@ export default function ReadArticlePage() {
 
 
           <div className="relative">
-            <button className="cursor-pointer  active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
-              e.stopPropagation();
-              setActiveMenu(activeMenu === article.id ? null : article.id);
-            }}>
-              <BsThreeDots size={25} />
-            </button>
+            <div className="flex items-center gap-2  bg-gray-100 border-gray-300 px-4 py-2 border rounded-full ">
+              <button className="cursor-pointer active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
+                e.stopPropagation();
+                setActiveMenu(activeMenu === article.id ? null : article.id);
+              }}>
+                <BsThreeDots size={25} />
+
+              </button>
+              <p className="font-creato text-gray-500">More</p>
+            </div>
             {activeMenu === article.id && (
+
               <div className="absolute animate-dropdown left-[-115px] top-12   bg-white h-80 w-60 rounded shadow-lg border-gray-300 border p-4">
                 <button
                   onClick={handleShare}
-                  className="cursor-pointer text-gray-500 flex items-center gap-3"
+                  className="cursor-pointer md:hidden text-gray-500 flex items-center gap-3"
                 >
-                  <PiArrowBendDoubleUpRight size={18} />
-                  <p className="font-creato text-sm"> Share</p>
+                  <AiOutlineLike size={18} />
+                  <p className="font-creato text-sm"> Like</p>
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="cursor-pointer md:hidden text-gray-500 flex  mt-4 items-center gap-3"
+                >
+                  <AiOutlineDislike size={18} />
+                  <p className="font-creato text-sm"> Dislike</p>
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="cursor-pointer text-gray-500 flex md:mt-0 mt-4  items-center gap-3"
+                >
+                  <TbBookmarks size={18} />
+                  <p className="font-creato text-sm"> Save</p>
                 </button>
                 <button
                   onClick={handleShare}
