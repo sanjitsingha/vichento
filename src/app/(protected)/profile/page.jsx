@@ -37,22 +37,22 @@ const Page = () => {
 
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    const { data: authData } = await supabase.auth.getUser();
+    const fetchProfile = async () => {
+      const { data: authData } = await supabase.auth.getUser();
 
-    if (!authData?.user) return;
+      if (!authData?.user) return;
 
-    const { data } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", authData.user.id)
-      .single();
+      const { data } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", authData.user.id)
+        .single();
 
-    setProfile(data);
-  };
+      setProfile(data);
+    };
 
-  fetchProfile();
-}, []);
+    fetchProfile();
+  }, []);
 
   const [selectedInterests, setSelectedInterests] = useState(
     user?.prefs?.interests || []
@@ -402,11 +402,11 @@ const Page = () => {
         <div className="flex justify-between items-baseline">
           <h1 className="text-[24px] text-black tracking-tight font-creato">Profile</h1>
           <div className="relative">
-          <img
-  src={profile?.avatar || "/default-avatar.jpg"}
-  alt="Profile"
-  className="w-12 h-12 rounded-full"
-/>
+            <img
+              src={profile?.avatar || "/default-avatar.jpg"}
+              alt="Profile"
+              className="w-12 h-12 rounded-full"
+            />
 
             {/* ✏️ Pen Icon */}
             <div className="absolute bottom-0 right-0 bg-black p-1 rounded-full">
@@ -469,7 +469,7 @@ const Page = () => {
           <hr className="md:my-10 my-6 opacity-20" />
           <button
             onClick={logout}
-            className="w-full cursor-pointer text-left flex items-center justify-between bg-gray-100 border border-gray-300 md:py-5 py-2 px-4 rounded-lg "
+            className="w-full cursor-pointer text-left flex items-center justify-between bg-white border border-gray-200 md:py-5 py-2 px-4 rounded-lg "
           >
             <div>
               <p className="text-red-500 md:text-[14px] text-sm">Logout</p>
@@ -528,7 +528,7 @@ const Page = () => {
       {/* ---------- Username Modal ---------- */}
       <Modal open={usernameModalOpen} onOpenChange={setUsernameModalOpen}>
         <h2 className="text-[16px] text-black font-creato mb-4">Change Username</h2>
- 
+
         <input
           type="text"
           placeholder="@newusername"
@@ -618,8 +618,8 @@ const Page = () => {
                 key={interest}
                 onClick={() => toggleInterest(interest)}
                 className={`px-4 py-1.5 rounded-full text-sm border transition ${isSelected
-                    ? "bg-black text-white border-black"
-                    : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
+                  ? "bg-black text-white border-black"
+                  : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
                   }`}
               >
                 {interest}

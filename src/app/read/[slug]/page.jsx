@@ -37,7 +37,6 @@ export default function ReadArticlePage() {
 
 
 
-  // console.log(isAuthor)
 
 
   const [activeMenu, setActiveMenu] = useState(null);
@@ -59,7 +58,13 @@ export default function ReadArticlePage() {
       try {
         const { data, error } = await supabase
           .from("articles")
-          .select("*")
+          .select(`
+            *,
+            users (
+              name,
+              avatar
+            )
+          `)
           .eq("slug", slug)
           .single();
 
@@ -122,8 +127,10 @@ export default function ReadArticlePage() {
     }
   };
 
+  console.log(article)
 
-  const avatar = article?.author_avatar;
+
+  const avatar = article?.users.avatar;
   /* ---------------- LOADING ---------------- */
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
@@ -167,7 +174,7 @@ export default function ReadArticlePage() {
 
             className="rounded-full object-cover"
           />
-          <p>{article.author_name || "Author"}</p>
+          <p>{article.users.name || "Author"}</p>
           <p>{new Date(article.created_at).toDateString()}</p>
         </div>
 
