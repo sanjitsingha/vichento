@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import HTMLReactParser from "html-react-parser";
 import { IoArrowRedoOutline, IoBookmark, IoBookmarkOutline } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
-import RelatedArticles from "@/app/components/RelatedArticles";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import useUserActions from "@/hooks/useUserActions";
@@ -16,6 +15,7 @@ import { AiFillLike, AiOutlineLike, AiFillDislike, AiOutlineDislike } from "reac
 import { BsThreeDots } from "react-icons/bs";
 import { PiArrowBendDoubleUpRight } from "react-icons/pi";
 import { PiSealWarningLight } from "react-icons/pi";
+import { RxShare2 } from "react-icons/rx";
 
 
 
@@ -36,6 +36,8 @@ export default function ReadArticlePage() {
   const isAuthor = user?.id === article?.author_id;
 
 
+
+  // console.log(isAuthor)
 
 
   const [activeMenu, setActiveMenu] = useState(null);
@@ -121,8 +123,7 @@ export default function ReadArticlePage() {
   };
 
 
-  const avatar = user?.user_metadata?.avatar_url;
-
+  const avatar = article?.author_avatar;
   /* ---------------- LOADING ---------------- */
   if (loading) {
     return <p className="text-center mt-20">Loading...</p>;
@@ -156,23 +157,23 @@ export default function ReadArticlePage() {
       </p>
 
       {/* AUTHOR */}
-      <div className="flex justify-between my-8">
+      <div className="flex justify-between mt-8 mb-6">
         <div className="text-gray-500 text-sm flex gap-3  items-center">
           <Image
             src={avatar || "/placeholder.png"}
             width={30}
             height={30}
-            objectFit="cover"
-            alt={article.author_name}
-            className="rounded-full"
+            alt={'h'}
+
+            className="rounded-full object-cover"
           />
-          <p>{isAuthor ? user?.user_metadata?.name : "Author"}</p>
+          <p>{article.author_name || "Author"}</p>
           <p>{new Date(article.created_at).toDateString()}</p>
         </div>
 
       </div>
-      <div className="w-full h-10 gap-8 flex md:justify-between items-center">
-        <div className="flex items-center bg-white px-5 border border-gray-200 py-2 rounded-full gap-2">
+      <div className="w-full h-10 gap-4 flex md:justify-between items-center">
+        <div className="flex items-center bg-white px-4 border border-gray-200 h-10 rounded-full gap-2">
           <button
             title="like"
             onClick={() => onLike(article.id)}
@@ -193,26 +194,24 @@ export default function ReadArticlePage() {
           </button>
 
 
-          {/* DisLike Button for Desktop */}
-
-          {/* <button
-            title="dislike"
-            onClick={() => onLike(article.id)}
-            className="cursor-pointer  transition-transform active:scale-85"
-          >
-            {isLiked ? (
-              <AiFillDislike size={23} className="text-black" />
-            ) : (
-              <AiOutlineDislike
-
-                size={23}
-                className="text-gray-500 hover:text-black transition-colors"
-              />
-            )}
-          </button> */}
 
         </div>
-        <div className="flex items-center gap-10">
+        <div className="flex items-center bg-white px-4 border border-gray-200 h-10  rounded-full gap-2">
+          <button
+            title="like"
+            onClick={() => onLike(article.id)}
+            className="cursor-pointer transition-transform active:scale-85 flex items-center gap-2"
+          >
+            <span>
+              <RxShare2 size={21} className="text-gray-500 hover:text-black transition-colors" />
+            </span>
+            <p className="text-sm font-creato text-gray-500">Share</p>
+          </button>
+
+
+
+        </div>
+        <div className="flex items-center">
           <button
             title="bookmark"
             onClick={() => toggleBookmark(article.id)}
@@ -230,7 +229,7 @@ export default function ReadArticlePage() {
 
 
           <div className="relative">
-            <div className="flex items-center gap-2 md:hidden bg-gray-100 border-gray-300 px-4 py-2 border rounded-full ">
+            <div className="flex items-center gap-2 md:hidden bg-white border-gray-200 px-4 h-10 border rounded-full ">
               <button className="cursor-pointer active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
                 e.stopPropagation();
                 setActiveMenu(activeMenu === article.id ? null : article.id);
@@ -238,7 +237,7 @@ export default function ReadArticlePage() {
                 <BsThreeDots size={25} />
 
               </button>
-              <p className="font-creato text-gray-500">More</p>
+              <p className="font-creato text-sm text-gray-500">More</p>
             </div>
             {activeMenu === article.id && (
 
@@ -292,7 +291,7 @@ export default function ReadArticlePage() {
         />
       )}
 
-      <div className="prose max-w-none text-black">
+      <div className="prose max-w-none font-creato text-xl text-black">
         {HTMLReactParser(article.content)}
       </div>
 
@@ -301,10 +300,10 @@ export default function ReadArticlePage() {
         <hr className="my-6" />
         <p className="text-xl font-semibold">Related Stories</p>
 
-        <RelatedArticles
+        {/* <RelatedArticles
           categories={article.categories}
           currentId={article.id}
-        />
+        /> */}
       </div>
     </div>
   );
