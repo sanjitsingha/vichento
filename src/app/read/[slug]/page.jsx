@@ -127,7 +127,7 @@ export default function ReadArticlePage() {
     }
   };
 
-  console.log(article)
+  // console.log(article)
 
 
   const avatar = article?.users.avatar;
@@ -170,7 +170,8 @@ export default function ReadArticlePage() {
             src={avatar || "/placeholder.png"}
             width={30}
             height={30}
-            alt={'h'}
+            title={article.users.name}
+            alt={article.users.name}
 
             className="rounded-full object-cover"
           />
@@ -179,7 +180,7 @@ export default function ReadArticlePage() {
         </div>
 
       </div>
-      <div className="w-full h-10 gap-4 flex md:justify-between items-center">
+      <div className="w-full h-10 gap-4 flex justify-start items-center">
         <div className="flex items-center bg-white px-4 border border-gray-200 h-10 rounded-full gap-2">
           <button
             title="like"
@@ -222,16 +223,19 @@ export default function ReadArticlePage() {
           <button
             title="bookmark"
             onClick={() => toggleBookmark(article.id)}
-            className="cursor-pointer transition-transform hidden active:scale-85"
+            className="cursor-pointer transition-transform hidden md:flex h-10 px-3 items-center gap-2 border border-gray-200 bg-white rounded-full active:scale-85"
           >
-            {isBookmarked ? (
-              <TbBookmarksFilled size={25} className="text-black" />
-            ) : (
-              <TbBookmarks
-                size={25}
-                className="text-gray-500 hover:text-black transition-colors"
-              />
-            )}
+            <span>
+              {isBookmarked ? (
+                <TbBookmarksFilled size={23} className="text-gray-500" />
+              ) : (
+                <TbBookmarks
+                  size={23}
+                  className="text-gray-500 transition-colors"
+                />
+              )}
+            </span>
+            <p className="text-sm font-creato text-gray-500">Save</p>
           </button>
 
 

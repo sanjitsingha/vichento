@@ -1,12 +1,12 @@
 "use client";
-
+import React from "react";
 import Link from "next/link";
 import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
 import { IoBookmarkOutline, IoBookmark } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function StoriesCardHorizontal({
+function StoriesCardHorizontal({
   article,
   isLiked,
   isBookmarked,
@@ -14,6 +14,8 @@ export default function StoriesCardHorizontal({
   onBookmark,
 }) {
   const { user } = useAuthContext();
+  const handleLike = React.useCallback(() => onLike(article.id), [onLike, article.id]);
+  const handleBookmark = React.useCallback(() => onBookmark(article.id), [onBookmark, article.id]);
 
   /* ================= IMAGE HELPERS ================= */
   const getImageUrl = (path) => {
@@ -84,7 +86,7 @@ export default function StoriesCardHorizontal({
 
         {/* LIKE */}
         <button
-          onClick={() => onLike(article.id)}
+          onClick={handleLike}
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isLiked ? (
@@ -114,4 +116,6 @@ export default function StoriesCardHorizontal({
       </div>
     </div>
   );
+
 }
+export default React.memo(StoriesCardHorizontal);
