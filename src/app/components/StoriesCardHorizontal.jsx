@@ -5,6 +5,8 @@ import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
 import { IoBookmarkOutline, IoBookmark } from "react-icons/io5";
 import { useAuthContext } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
+import { TbBookmarks, TbBookmarksFilled } from "react-icons/tb";
+import { AiFillLike, AiOutlineLike, AiFillDislike, AiOutlineDislike } from "react-icons/ai";
 
 function StoriesCardHorizontal({
   article,
@@ -90,10 +92,10 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isLiked ? (
-            <PiThumbsUpFill size={20} className="text-black" />
+            <AiFillLike size={22} className="text-black" />
           ) : (
-            <PiThumbsUp
-              size={20}
+            <AiOutlineLike
+              size={22}
               className="text-gray-500 hover:text-black transition-colors"
             />
           )}
@@ -105,10 +107,10 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isBookmarked ? (
-            <IoBookmark size={18} className="text-black" />
+            <TbBookmarksFilled size={22} className="text-black" />
           ) : (
-            <IoBookmarkOutline
-              size={18}
+            <TbBookmarks
+              size={22}
               className="text-gray-500 hover:text-black transition-colors"
             />
           )}

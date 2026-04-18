@@ -239,53 +239,34 @@ export default function ReadArticlePage() {
           </button>
 
 
-          <div className="relative">
-            <div className="flex items-center gap-2 md:hidden bg-white border-gray-200 px-4 h-10 border rounded-full ">
-              <button className="cursor-pointer active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
-                e.stopPropagation();
-                setActiveMenu(activeMenu === article.id ? null : article.id);
-              }}>
-                <BsThreeDots size={25} />
 
-              </button>
-              <p className="font-creato text-sm text-gray-500">More</p>
-            </div>
-            {activeMenu === article.id && (
 
-              <div className="absolute animate-dropdown left-[-115px] top-12   bg-white h-80 w-60 rounded shadow-lg border-gray-300 border p-4">
-                <button
-                  onClick={handleShare}
-                  className="cursor-pointer md:hidden text-gray-500 flex items-center gap-3"
-                >
-                  <AiOutlineLike size={18} />
-                  <p className="font-creato text-sm"> Like</p>
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="cursor-pointer md:hidden text-gray-500 flex  mt-4 items-center gap-3"
-                >
-                  <AiOutlineDislike size={18} />
-                  <p className="font-creato text-sm"> Dislike</p>
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="cursor-pointer text-gray-500 flex md:mt-0 mt-4  items-center gap-3"
-                >
-                  <TbBookmarks size={18} />
-                  <p className="font-creato text-sm"> Save</p>
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="cursor-pointer mt-4 text-red-500 flex items-center gap-3"
-                >
-                  <PiSealWarningLight size={18} />
-                  <p className="font-creato text-sm"> Report</p>
-                </button>
+        </div>
+        <div className="relative ml-auto ">
+          <div className="flex items-center   w-fit gap-2 bg-white border-gray-200 px-4 h-10 border rounded-full ">
+            <button className="cursor-pointer active:scale-85 hover:text-black transition-all ease-in-out duration-200 text-gray-500" title="more" onClick={(e) => {
+              e.stopPropagation();
+              setActiveMenu(activeMenu === article.id ? null : article.id);
+            }}>
+              <BsThreeDots size={25} />
 
-              </div>
-            )}
+            </button>
+            <p className="font-creato text-sm text-gray-500">More</p>
           </div>
+          {activeMenu === article.id && (
 
+            <div className="absolute animate-dropdown   bg-white h-fit w-fit rounded shadow-lg border-gray-300 border p-4">
+
+              <button
+                onClick={handleShare}
+                className="cursor-pointer text-red-500 flex items-center gap-3"
+              >
+                <PiSealWarningLight size={18} />
+                <p className="font-creato text-sm"> Report</p>
+              </button>
+
+            </div>
+          )}
         </div>
 
       </div>
