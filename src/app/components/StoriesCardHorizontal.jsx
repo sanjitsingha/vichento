@@ -34,7 +34,7 @@ function StoriesCardHorizontal({
   const avatarPhoto = article.author_avatar;
 
   return (
-    <div className="border-b border-gray-200 pb-8 mb-8">
+    <div className="border-b border-gray-200  mb-8">
 
       {/* ================= AUTHOR ================= */}
       <div className="flex items-center gap-3 text-xs text-gray-500">
@@ -65,7 +65,7 @@ function StoriesCardHorizontal({
               {article.title}
             </h2>
 
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+            <p className="text-sm text-gray-500 mt-4 line-clamp-2">
               {article.content
                 ?.replace(/<[^>]*>/g, "")
                 .slice(0, 220)}
@@ -84,7 +84,7 @@ function StoriesCardHorizontal({
       </Link>
 
       {/* ================= ACTIONS ================= */}
-      <div className="flex gap-8 mt-2 text-gray-500">
+      <div className="flex gap-8 my-8 text-gray-500">
 
         {/* LIKE */}
         <button
@@ -92,7 +92,7 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isLiked ? (
-            <AiFillLike size={22} className="text-black" />
+            <AiFillLike size={22} className="text-gray-600" />
           ) : (
             <AiOutlineLike
               size={22}
@@ -107,7 +107,7 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isBookmarked ? (
-            <TbBookmarksFilled size={22} className="text-black" />
+            <TbBookmarksFilled size={22} className="text-gray-600" />
           ) : (
             <TbBookmarks
               size={22}
