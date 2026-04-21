@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 
 const page = () => {
-  const [activeTab, setActiveTab] = useState("published");
+  const [activeTab, setActiveTab] = useState("drafts");
   const { user } = useAuthContext();
   const [drafts, setDrafts] = useState([]);
   const [publishedArticles, setPublishedArticles] = useState([]);
@@ -83,7 +83,7 @@ const page = () => {
         <div className="mt-3 border-gray-300  border-[.5px] rounded py-2 w-fit  px-6 flex gap-6">
           <button
             onClick={() => setActiveTab("drafts")}
-            className={`text-[14px] ${activeTab === "drafts"
+            className={`text-[14px] cursor-pointer ${activeTab === "drafts"
               ? "text-black font-bold "
               : "text-gray-500"
               }`}
@@ -93,7 +93,7 @@ const page = () => {
 
           <button
             onClick={() => setActiveTab("published")}
-            className={`text-[14px] ${activeTab === "published"
+            className={`text-[14px] cursor-pointer ${activeTab === "published"
               ? "text-black font-bold"
               : "text-gray-500"
               }`}
@@ -104,8 +104,51 @@ const page = () => {
         {activeTab === "drafts" && (
           <div className="w-full border border-gray-300 rounded-md mt-6">
             {drafts.map((draft) => (
-              <div key={draft.id} className="p-4">
-                <p>{draft.title}</p>
+              <div key={draft.id} className="p-4 flex items-center border-b border-gray-300 gap-4">
+                <div>
+                  <Image
+                    src={draft.cover_image || "/placeholder.png"}
+                    width={120}
+                    height={90}
+                    alt={draft.title}
+                    className="object-cover rounded"
+                  />
+                </div>
+
+                <div>
+                  <p className="font-creato text-[18px] text-black font-medium">{draft.title}</p>
+                  <p className="font-creato text-[12px] text-gray-500">{new Date(draft.created_at).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}</p>
+                </div>
+
+                <div className="ml-auto  relative">
+                  <button className="cursor-pointer">
+                    <EllipsisHorizontalIcon className="w-[18px] h-[18px] text-gray-600 hover:text-black" />
+                  </button>
+                  {activeMenu === draft.id && (
+                    <div className="absolute right-0 top-8 w-44 bg-white border border-gray-300 rounded  z-50">
+                      <Link
+                        href={`/read/${draft.slug}`}
+                        className="flex px-4 py-2 text-sm gap-4  font-medium"
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <ArrowUturnLeftIcon className="w-4 h-4" />
+                        <p>Continue Writing</p>
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(draft.id)}
+                        className="flex px-4 py-2 text-sm gap-4 border-t cursor-pointer border-t-gray-300  font-medium w-full text-left"
+                      >
+                        <TrashIcon className="w-4 h-4 text-red-400" />
+                        <p className="text-red-400">Delete</p>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
