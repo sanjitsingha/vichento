@@ -131,6 +131,15 @@ const page = () => {
                 <p className='text-xs text-gray-400'>22-04-2026</p>
               </div>
             </div>
+            <div className='w-full gap-3 h-fit    flex  rounded mt-2'>
+              <div className=' overflow-hidden relative w-[140px] h-[100px]'>
+                <Image src={'/placeholder.png'} fill={true} alt='title' objectFit='cover' className='rounded-sm ' />
+              </div>
+              <div className='flex flex-col justify-center'>
+                <p className=' text-[16px]  line-clamp-1  text-gray-800 font-creato'>this will be the article title</p>
+                <p className='text-xs text-gray-400'>22-04-2026</p>
+              </div>
+            </div>
 
           </div>
         </div>
