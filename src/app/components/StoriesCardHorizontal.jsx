@@ -84,7 +84,7 @@ function StoriesCardHorizontal({
       </Link>
 
       {/* ================= ACTIONS ================= */}
-      <div className="flex gap-8 my-8 text-gray-500">
+      <div className="flex gap-8 my-4 text-gray-500">
 
         {/* LIKE */}
         <button
@@ -92,7 +92,7 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isLiked ? (
-            <AiFillLike size={22} className="text-gray-600" />
+            <AiFillLike size={22} className="text-black" />
           ) : (
             <AiOutlineLike
               size={22}
@@ -107,7 +107,7 @@ function StoriesCardHorizontal({
           className="cursor-pointer transition-transform active:scale-95"
         >
           {isBookmarked ? (
-            <TbBookmarksFilled size={22} className="text-gray-600" />
+            <TbBookmarksFilled size={22} className="text-black" />
           ) : (
             <TbBookmarks
               size={22}

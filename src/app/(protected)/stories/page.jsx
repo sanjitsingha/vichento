@@ -13,9 +13,15 @@ import { PiShareFatThin } from "react-icons/pi";
 
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+
 
 const page = () => {
-  const [activeTab, setActiveTab] = useState("drafts");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "drafts");
   const { user } = useAuthContext();
   const [drafts, setDrafts] = useState([]);
   const [publishedArticles, setPublishedArticles] = useState([]);
@@ -23,6 +29,12 @@ const page = () => {
 
 
   const [activeMenu, setActiveMenu] = useState(null);
+
+  useEffect(() => {
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   // ✅ close dropdown on outside click
   useEffect(() => {
@@ -82,7 +94,10 @@ const page = () => {
         {/* Tabs */}
         <div className="mt-3 border-gray-300  border-[.5px] rounded py-2 w-fit  px-6 flex gap-6">
           <button
-            onClick={() => setActiveTab("drafts")}
+            onClick={() => {
+              setActiveTab("drafts");
+              router.push("/stories?tab=drafts");
+            }}
             className={`text-[14px] cursor-pointer ${activeTab === "drafts"
               ? "text-black font-bold "
               : "text-gray-500"
@@ -92,7 +107,10 @@ const page = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab("published")}
+            onClick={() => {
+              setActiveTab("published");
+              router.push("/stories?tab=published");
+            }}
             className={`text-[14px] cursor-pointer ${activeTab === "published"
               ? "text-black font-bold"
               : "text-gray-500"

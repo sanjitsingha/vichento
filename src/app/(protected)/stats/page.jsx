@@ -6,6 +6,8 @@ import { RxShare2 } from "react-icons/rx";
 import { BsThreeDots } from "react-icons/bs";
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { HiOutlineDotsHorizontal } from "react-icons/hi";
+
 
 const page = () => {
   return (
@@ -68,7 +70,12 @@ const page = () => {
 
           </div>
           <div className='w-full  border border-gray-300 p-2 md:p-4 rounded'>
-            <p className='text-black text-xl font-creato font-bold'>Drafts</p>
+            <div className="flex justify-between items-center">
+              <p className='text-black text-xl font-creato font-bold'>Drafts</p>
+              <Link href="/stories?tab=drafts">
+                <p className="text-gray-500 text-sm font-creato cursor-pointer">View all</p>
+              </Link>
+            </div>
             <div className='w-full  h-full '>
               <div className='w-full gap-2 h-fit pb-4 border-b  flex items-center border-gray-300 rounded mt-2'>
                 <div className='h-full w-20 overflow-hidden'>
@@ -119,7 +126,7 @@ const page = () => {
         <div className='w-full h-fit  border border-gray-300 rounded mt-2  md:mt-10 p-4'>
           <div className='flex items-center justify-between'>
             <p className='text-black font-semibold font-creato'>All Articles</p>
-            <Link href={'/all-articles'} className='text-gray-500 text-xs font-creato flex items-center gap-2'>View all <ArrowUpRightIcon className='size-3.5' /></Link>
+            <Link href={'/stories?tab=published'} className='text-gray-500 text-xs font-creato flex items-center gap-2'>View all <ArrowUpRightIcon className='size-3.5' /></Link>
           </div>
           <div className='w-full mt-4 h-fit'>
             <div className='w-full gap-3 h-fit    flex  rounded mt-2'>
@@ -130,6 +137,10 @@ const page = () => {
                 <p className=' text-[16px]  line-clamp-1  text-gray-800 font-creato'>this will be the article title</p>
                 <p className='text-xs text-gray-400'>22-04-2026</p>
               </div>
+              <div className="ml-auto flex items-center gap-8">
+                <Link className="text-gray-500 text-xs font-creato flex items-center gap-2" href='/stats/insights'> <ArrowUpRightIcon className='size-5' /></Link>
+                <Link className="text-gray-500 text-xs font-creato flex items-center gap-2" href='/stats/insights'> <HiOutlineDotsHorizontal className='size-6' /></Link>
+              </div>
             </div>
             <div className='w-full gap-3 h-fit    flex  rounded mt-2'>
               <div className=' overflow-hidden relative w-[140px] h-[100px]'>
@@ -138,6 +149,10 @@ const page = () => {
               <div className='flex flex-col justify-center'>
                 <p className=' text-[16px]  line-clamp-1  text-gray-800 font-creato'>this will be the article title</p>
                 <p className='text-xs text-gray-400'>22-04-2026</p>
+              </div>
+              <div className="ml-auto flex items-center gap-8">
+                <Link className="text-gray-500 text-xs font-creato flex items-center gap-2" href='/stats/insights'> <ArrowUpRightIcon className='size-5' /></Link>
+                <Link className="text-gray-500 text-xs font-creato flex items-center gap-2" href='/stats/insights'> <HiOutlineDotsHorizontal className='size-6' /></Link>
               </div>
             </div>
 
