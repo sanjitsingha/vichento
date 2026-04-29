@@ -137,22 +137,6 @@ const Page = () => {
   const [passMsg, setPassMsg] = useState(null);
 
 
-  // const AVATARS = [
-  //   "69c3b1190013e1c34def",
-  //   "69c3b11400366576f43f",
-  //   "69c3b1100001e28a6f53",
-  //   "69c3b10b0017652ee857",
-  //   "69c3b105001867b3414e",
-  //   "69c3b0ff00156e6886a7",
-  //   "69c3b0f60016e5e370cd",
-  //   "69c3b0f00026e0b5d9e5",
-  //   "69c3b0e3002d6b4bc943",
-  //   "69c3b0de0017064e0a1e",
-  //   "69c3b0ce003aecbf2faa",
-  //   "69c3b0b90038fc4c6a8d",
-  // ];
-
-  // console.log(user); // Get details of Auth User
 
   const handleLogout = async () => {
     await logoutUser();
@@ -397,377 +381,412 @@ const Page = () => {
   if (!user) return null; // or show loading/redirect as you prefer
 
   return (
-    <div className="w-full">
-      <div className="w-full max-w-[800px] px-4 md:px-0 pt-10 mx-auto ">
-        <div className="flex justify-between items-baseline">
-          <h1 className="text-[24px] text-black tracking-tight font-creato">Profile</h1>
-          <div className="relative">
-            <img
-              src={profile?.avatar || "/default-avatar.jpg"}
-              alt="Profile"
-              className="w-12 h-12 rounded-full"
-            />
+    <div className="w-full bg-white min-h-screen pb-20">
+      <div className="w-full max-w-3xl px-4 md:px-6 pt-16 mx-auto font-creato">
+        <h1 className="text-4xl font-semibold tracking-tight text-black mb-12">Settings</h1>
 
-            {/* ✏️ Pen Icon */}
-            <div className="absolute bottom-0 right-0 bg-black p-1 rounded-full">
-              <PencilIcon className="w-3 h-3 text-white" />
+        <div className="space-y-10">
+          {/* Profile Information Section */}
+          <section>
+            <div className="flex items-center justify-between py-6 border-b border-gray-200">
+              <div className="space-y-1">
+                <h2 className="text-[15px] font-medium text-black">Profile picture</h2>
+                <p className="text-sm text-gray-500">Your profile picture will appear on your profile page.</p>
+              </div>
+              <div className="relative cursor-pointer group ml-4 shrink-0" onClick={() => setAvatarModalOpen(true)}>
+                <img
+                  src={profile?.avatar || "/default-avatar.jpg"}
+                  alt="Profile"
+                  className="w-[88px] h-[88px] rounded-full object-cover group-hover:opacity-80 transition-opacity bg-gray-100"
+                />
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <PencilIcon className="w-6 h-6 text-white" />
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setDisplayNameModal(true)}>
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Name</h2>
+                <p className="text-sm text-gray-500 line-clamp-1">{profile?.name || "—"}</p>
+              </div>
+              <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
+            </div>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setUsernameModalOpen(true)}>
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Username</h2>
+                <p className="text-sm text-gray-500 line-clamp-1">{user?.prefs?.username || "—"}</p>
+              </div>
+              <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
+            </div>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setBioModalOpen(true)}>
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Short bio</h2>
+                <p className="text-sm text-gray-500 line-clamp-2">{user?.prefs?.bio || "—"}</p>
+              </div>
+              <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
+            </div>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200">
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Email address</h2>
+                <p className="text-sm text-gray-500">{profile?.email || "—"}</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Account Management Section */}
+          <section className="pt-4">
+            <h3 className="text-xs font-semibold text-gray-400 mb-2 tracking-widest uppercase">Account</h3>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setChangePasswordOpen(true)}>
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Password</h2>
+                <p className="text-sm text-gray-500">Update your account password</p>
+              </div>
+              <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
+            </div>
+
+            <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setPreferencesOpen(true)}>
+              <div className="space-y-1 flex-1 pr-4">
+                <h2 className="text-[15px] font-medium text-black">Topics of Interest</h2>
+                <p className="text-sm text-gray-500">Manage your reading preferences</p>
+              </div>
+              <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
+            </div>
+          </section>
+
+          <section className="pt-4">
+            <h3 className="text-xs font-semibold text-red-500 mb-2 tracking-widest uppercase">Danger Zone</h3>
+
+            <button
+              onClick={logout}
+              className="w-full text-left flex items-center justify-between py-6 cursor-pointer group"
+            >
+              <div className="space-y-1">
+                <h2 className="text-[15px] font-medium text-red-600">Sign out</h2>
+                <p className="text-sm text-gray-500">Sign out of your account on this device</p>
+              </div>
+              <ArrowRightStartOnRectangleIcon className="w-5 h-5 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </section>
         </div>
 
-        <hr className="mb-4 text-black mt-2 opacity-20" />
-        <div className="w-full flex flex-col mt-10 gap-6">
-          <div className="flex items-center text-[14px] justify-between text-black/60">
-            <p>Display Name</p>
-            <button
-              onClick={() => setDisplayNameModal(true)}
-              className="underline cursor-pointer "
-            >
-              {profile?.name || "—"}
-            </button>
-          </div>
-
-          <div className="flex items-center text-[14px] justify-between text-black/60">
-            <p>User Name</p>
-            <button
-              onClick={() => setUsernameModalOpen(true)}
-              className="underline cursor-pointer"
-            >
-              <ArrowUpRightIcon className="w-4 h-4 inline" />
-            </button>
-          </div>
-
-          <div className="flex items-center text-[14px] justify-between text-black/60">
-            <p>Email Address</p>
-            <p>{profile?.email || "—"}</p>
-          </div>
-
-          <div
-            onClick={() => setChangePasswordOpen(true)}
-            className="flex cursor-pointer items-center text-[14px] justify-between text-black/60"
-          >
-            <p>Change Password</p>
-            <p className="cursor-pointer underline">
-              <ArrowUpRightIcon className="w-4 h-4 inline" />
-            </p>
-          </div>
-          <div
-            onClick={() => setPreferencesOpen(true)}
-            className="flex cursor-pointer items-center text-[14px] justify-between text-black/60"
-          >
-            <p>Preferences</p>
-            <p className="cursor-pointer underline">
-              <ArrowUpRightIcon className="w-4 h-4 inline" />
-            </p>
-          </div>
-          <div className="flex items-center text-[14px]  justify-between text-black/60">
-            <p>About</p>
-            <button onClick={() => setBioModalOpen(true)} className=" cursor-pointer">
-              <ArrowUpRightIcon className="w-4 h-4 inline" />
-            </button>
-          </div>
-          <hr className="md:my-10 my-6 opacity-20" />
-          <button
-            onClick={logout}
-            className="w-full cursor-pointer text-left flex items-center justify-between bg-white border border-gray-200 md:py-5 py-2 px-4 rounded-lg "
-          >
-            <div>
-              <p className="text-red-500 md:text-[14px] text-sm">Logout</p>
-              <p className="md:text-[12px] text-xs text-black/50">
-                Permanently delete your account and all of your content.
-              </p>
-            </div>
-            <ArrowRightStartOnRectangleIcon className="w-6 h-6 ml-1 inline text-red-500" />
-          </button>
-        </div>
-        <div className="mt-8 w-full">
-          <h1 className="md:text-[16px] text-sm text-center  text-black/40">
-            Made with <span className="text-red-600">&#10084;</span>  <span >in India</span>
-          </h1>
+        <div className="mt-16 pt-8 flex justify-center">
+          <p className="text-sm text-gray-400 font-serif italic">
+            Made with <span className="text-red-500 mx-1 not-italic text-lg leading-none align-middle">&hearts;</span> in India
+          </p>
         </div>
       </div>
 
       {/* ---------- Display Name Modal ---------- */}
       <Modal open={displayNameModal} onOpenChange={setDisplayNameModal}>
-        <h2 className="text-[16px] font-creato text-black mb-4">Display Name</h2>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-black mb-6">Display Name</h2>
 
-        <input
-          placeholder="New Display Name"
-          className="outline-none px-2 font-creato w-full border-b border-gray-300 text-black text-[14px] py-1 "
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-        />
+          <input
+            placeholder="New Display Name"
+            className="outline-none w-full border-b border-gray-200 focus:border-black text-black text-[15px] py-2 transition-colors placeholder:text-gray-400"
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            autoFocus
+          />
 
-        {displayMsg && (
-          <p
-            className={`mt-2 text-sm ${displayMsg.type === "error" ? "text-red-500" : "text-green-600"
-              }`}
-          >
-            {displayMsg.text}
-          </p>
-        )}
+          {displayMsg && (
+            <p
+              className={`mt-3 text-sm ${displayMsg.type === "error" ? "text-red-500" : "text-green-600"
+                }`}
+            >
+              {displayMsg.text}
+            </p>
+          )}
 
-        <div className="flex gap-4 mt-4 justify-end">
-          <button
-            onClick={() => setDisplayNameModal(false)}
-            className="px-4 border border-gray-400 py-1 text-black rounded-full"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdateDisplayName}
-            disabled={displayLoading}
-            className="px-4 py-1 bg-black text-white rounded-full"
-          >
-            {displayLoading ? "Saving..." : "Confirm"}
-          </button>
+          <div className="flex gap-3 mt-8 justify-end">
+            <button
+              onClick={() => setDisplayNameModal(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateDisplayName}
+              disabled={displayLoading}
+              className="px-5 py-2 text-[14px] bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {displayLoading ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       {/* ---------- Username Modal ---------- */}
       <Modal open={usernameModalOpen} onOpenChange={setUsernameModalOpen}>
-        <h2 className="text-[16px] text-black font-creato mb-4">Change Username</h2>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-black mb-6">Change Username</h2>
 
-        <input
-          type="text"
-          placeholder="@newusername"
-          className="border-b border-gray-300 outline-none p-2 w-full font-creato text-black text-[14px]"
-          value={newUsername}
-          onChange={(e) => setNewUsername(e.target.value)}
-        />
+          <input
+            type="text"
+            placeholder="@newusername"
+            className="outline-none w-full border-b border-gray-200 focus:border-black text-black text-[15px] py-2 transition-colors placeholder:text-gray-400"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            autoFocus
+          />
 
-        {usernameMsg && (
-          <p
-            className={`mt-2 text-sm ${usernameMsg.type === "error" ? "text-red-500" : "text-green-600"
-              }`}
-          >
-            {usernameMsg.text}
-          </p>
-        )}
+          {usernameMsg && (
+            <p
+              className={`mt-3 text-sm ${usernameMsg.type === "error" ? "text-red-500" : "text-green-600"
+                }`}
+            >
+              {usernameMsg.text}
+            </p>
+          )}
 
-        <div className="flex gap-2 mt-4 justify-end">
-          <button
-            onClick={() => setUsernameModalOpen(false)}
-            className="px-4 border border-gray-400 py-1 text-black rounded-full"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdateUsername}
-            disabled={usernameLoading}
-            className="px-4 py-1 bg-black text-white rounded-full"
-          >
-            {usernameLoading ? "Saving..." : "Update"}
-          </button>
+          <div className="flex gap-3 mt-8 justify-end">
+            <button
+              onClick={() => setUsernameModalOpen(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateUsername}
+              disabled={usernameLoading}
+              className="px-5 py-2 text-[14px] bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {usernameLoading ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       {/* ---------- Bio Modal ---------- */}
       <Modal open={bioModalOpen} onOpenChange={setBioModalOpen}>
-        <h2 className="text-[16px] text-black font-creato mb-4">Update Bio</h2>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-black mb-6">Short bio</h2>
 
-        <textarea
-          placeholder="Write your bio..."
-          className="outline-none p-2 text-[14px] w-full text-black rounded-md bg-gray-200"
-          value={bioText}
-          onChange={(e) => setBioText(e.target.value)}
-          rows={6}
-        />
+          <textarea
+            placeholder="Write your bio..."
+            className="outline-none p-3 text-[15px] w-full text-black rounded-xl bg-gray-50 border border-gray-200 focus:border-gray-400 focus:bg-white transition-all resize-none"
+            value={bioText}
+            onChange={(e) => setBioText(e.target.value)}
+            rows={5}
+            autoFocus
+          />
 
-        {bioMsg && (
-          <p
-            className={`mt-2 text-sm ${bioMsg.type === "error" ? "text-red-500" : "text-green-600"
-              }`}
-          >
-            {bioMsg.text}
-          </p>
-        )}
+          {bioMsg && (
+            <p
+              className={`mt-3 text-sm ${bioMsg.type === "error" ? "text-red-500" : "text-green-600"
+                }`}
+            >
+              {bioMsg.text}
+            </p>
+          )}
 
-        <div className="flex gap-2 mt-4 justify-end">
-          <button
-            onClick={() => setBioModalOpen(false)}
-            className="px-4 border border-gray-400 py-1 text-black rounded-full"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdateBio}
-            disabled={bioLoading}
-            className="px-4 py-1 bg-black text-white rounded-full"
-          >
-            {bioLoading ? "Saving..." : "Confirm"}
-          </button>
+          <div className="flex gap-3 mt-8 justify-end">
+            <button
+              onClick={() => setBioModalOpen(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateBio}
+              disabled={bioLoading}
+              className="px-5 py-2 text-[14px] bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {bioLoading ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       {/* ---------- Preferences Modal ---------- */}
       <Modal open={preferencesOpen} onOpenChange={setPreferencesOpen}>
-        <h2 className="text-[16px] text-black mb-2 font-creato">Update Preferences</h2>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-black mb-2">Topics of Interest</h2>
 
-        <p className="text-sm text-gray-500 mb-4">
-          Choose at least 3 topics you’re interested in
-        </p>
-
-        {/* Chips */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {INTERESTS.map((interest) => {
-            const isSelected = selectedInterests.includes(interest);
-            return (
-              <button
-                key={interest}
-                onClick={() => toggleInterest(interest)}
-                className={`px-4 py-1.5 rounded-full text-sm border transition ${isSelected
-                  ? "bg-black text-white border-black"
-                  : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-                  }`}
-              >
-                {interest}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Counter */}
-        <p className="text-xs text-gray-500 mb-2">
-          {selectedInterests.length} / 5 selected
-        </p>
-
-        {/* Message */}
-        {prefMsg && (
-          <p
-            className={`mt-2 text-sm ${prefMsg.type === "error" ? "text-red-500" : "text-green-600"
-              }`}
-          >
-            {prefMsg.text}
+          <p className="text-[15px] text-gray-500 mb-6">
+            Choose at least 3 topics you're interested in reading about.
           </p>
-        )}
 
-        {/* Actions */}
-        <div className="flex gap-2 mt-5 justify-end">
-          <button
-            onClick={() => setPreferencesOpen(false)}
-            className="px-4 py-1 rounded-full border border-gray-400 text-black"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleUpdatePreferences}
-            disabled={prefLoading}
-            className="px-4 py-1 bg-black text-white rounded-full text-sm disabled:opacity-60 "
-          >
-            {prefLoading ? "Saving..." : "Confirm"}
-          </button>
+          {/* Chips */}
+          <div className="flex flex-wrap gap-2.5 mb-6">
+            {INTERESTS.map((interest) => {
+              const isSelected = selectedInterests.includes(interest);
+              return (
+                <button
+                  key={interest}
+                  onClick={() => toggleInterest(interest)}
+                  className={`px-4 py-2 rounded-full text-[14px] border transition-colors ${isSelected
+                    ? "bg-black text-white border-black"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+                    }`}
+                >
+                  {interest}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Counter */}
+          <p className="text-sm text-gray-400 mb-2">
+            {selectedInterests.length} / 5 selected
+          </p>
+
+          {/* Message */}
+          {prefMsg && (
+            <p
+              className={`mt-3 text-sm ${prefMsg.type === "error" ? "text-red-500" : "text-green-600"
+                }`}
+            >
+              {prefMsg.text}
+            </p>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3 mt-8 justify-end">
+            <button
+              onClick={() => setPreferencesOpen(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdatePreferences}
+              disabled={prefLoading}
+              className="px-5 py-2 text-[14px] bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {prefLoading ? "Saving..." : "Save"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       {/* ---------- Change Password Modal ---------- */}
       <Modal open={changePasswordOpen} onOpenChange={setChangePasswordOpen}>
-        <h2 className="text-[16px] text-black font-creato mb-4">Change Password</h2>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-black mb-6">Change Password</h2>
 
-        <input
-          placeholder="Current Password"
-          className="outline-none px-2 w-full border-b border-gray-300 text-black text-[14px] py-1 mb-4"
-          type="password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-        />
+          <div className="space-y-6">
+            <input
+              placeholder="Current Password"
+              className="outline-none w-full border-b border-gray-200 focus:border-black text-black text-[15px] py-2 transition-colors placeholder:text-gray-400"
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              autoFocus
+            />
 
-        <input
-          placeholder="New Password"
-          className="outline-none px-2 w-full border-b border-gray-300 text-black text-[14px] py-1 mb-4"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
+            <input
+              placeholder="New Password"
+              className="outline-none w-full border-b border-gray-200 focus:border-black text-black text-[15px] py-2 transition-colors placeholder:text-gray-400"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
 
-        {passMsg && (
-          <p
-            className={`mt-2 text-sm ${passMsg.type === "error" ? "text-red-500" : "text-green-600"
-              }`}
-          >
-            {passMsg.text}
-          </p>
-        )}
+          {passMsg && (
+            <p
+              className={`mt-3 text-sm ${passMsg.type === "error" ? "text-red-500" : "text-green-600"
+                }`}
+            >
+              {passMsg.text}
+            </p>
+          )}
 
-        <div className="flex gap-2 mt-4 justify-end">
-          <button
-            onClick={() => setChangePasswordOpen(false)}
-            className="px-4 py-1 rounded-full border border-gray-400 text-black"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleChangePassword}
-            disabled={passLoading}
-            className="px-4 py-1 bg-black text-white rounded-full"
-          >
-            {passLoading ? "Saving..." : "Change"}
-          </button>
+          <div className="flex gap-3 mt-8 justify-end">
+            <button
+              onClick={() => setChangePasswordOpen(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleChangePassword}
+              disabled={passLoading}
+              className="px-5 py-2 text-[14px] bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {passLoading ? "Saving..." : "Change"}
+            </button>
+          </div>
         </div>
       </Modal>
 
       {/* ---------- Delete Account modal (keeps as demo; implement server-side deletion carefully) ---------- */}
       <Modal open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <h2 className="text-[16px] mb-4">Delete Account</h2>
-        <p className="text-[14px] text-black/60">
-          This will permanently delete your account and all associated content.
-        </p>
-        <div className="flex gap-2 mt-4 justify-end">
-          <button
-            onClick={() => setDeleteModalOpen(false)}
-            className="px-4 py-1 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-1 bg-red-700 text-white rounded"
-            onClick={() => {
-              // implement deletion carefully — server-side is recommended.
-              alert("Implement account deletion on server or using Admin SDK.");
-            }}
-          >
-            Delete
-          </button>
+        <div className="p-2">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Delete Account</h2>
+          <p className="text-[15px] text-gray-600 mb-8">
+            This will permanently delete your account and all associated content. This action cannot be undone.
+          </p>
+          <div className="flex gap-3 mt-4 justify-end">
+            <button
+              onClick={() => setDeleteModalOpen(false)}
+              className="px-5 py-2 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              className="px-5 py-2 text-[14px] bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors"
+              onClick={() => {
+                // implement deletion carefully — server-side is recommended.
+                alert("Implement account deletion on server or using Admin SDK.");
+              }}
+            >
+              Delete Account
+            </button>
+          </div>
         </div>
       </Modal>
       <Modal open={avatarModalOpen} onOpenChange={setAvatarModalOpen}>
-        <h2 className="text-[16px] mb-4">Choose Avatar</h2>
+        <div className="p-2 text-center">
+          <h2 className="text-xl font-semibold text-black mb-2">Profile picture</h2>
+          <p className="text-[15px] text-gray-500 mb-8">Choose an image for your profile.</p>
 
-        {/* Avatar Grid */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          {/* {AVATARS.map((id) => (
-            <img
-              key={id}
-              src={storage.getFileView("article-images", id)}
-              className={`w-14 h-14 rounded-full cursor-pointer border hover:scale-105 transition ${avatarUploading ? "pointer-events-none opacity-50" : ""
-                }`}
-              onClick={() => handleSelectAvatar(id)}
-            />
-          ))} */}
+          {/* Avatar Grid */}
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {/* {AVATARS.map((id) => (
+              <img
+                key={id}
+                src={storage.getFileView("article-images", id)}
+                className={`w-14 h-14 rounded-full cursor-pointer border hover:scale-105 transition ${avatarUploading ? "pointer-events-none opacity-50" : ""
+                  }`}
+                onClick={() => handleSelectAvatar(id)}
+              />
+            ))} */}
+          </div>
+
+          {/* Upload Option */}
+          <button
+            onClick={() => {
+              if (!avatarUploading) fileInputRef.current.click();
+            }}
+            disabled={avatarUploading}
+            className="w-full bg-black hover:bg-gray-800 transition-colors text-white py-3 rounded-full font-medium disabled:opacity-50"
+          >
+            {avatarUploading ? "Uploading..." : "Select an image"}
+          </button>
+
+          <button
+            onClick={() => setAvatarModalOpen(false)}
+            className="mt-4 text-[14px] text-gray-500 hover:text-black font-medium transition-colors"
+          >
+            Cancel
+          </button>
+
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            ref={fileInputRef}
+            onChange={handleAvatarChange}
+          />
         </div>
-
-        {/* OR Divider */}
-        <div className="text-center text-xs text-gray-400 mb-2">OR</div>
-
-        {/* Upload Option */}
-        <button
-          onClick={() => {
-            if (!avatarUploading) fileInputRef.current.click();
-          }}
-          disabled={avatarUploading}
-          className="w-full bg-black text-white py-2 rounded disabled:opacity-60"
-        >
-          {avatarUploading ? "Uploading..." : "Select from Gallery"}
-        </button>
-
-        <input
-          type="file"
-          accept="image/*"
-          hidden
-          ref={fileInputRef}
-          onChange={handleAvatarChange}
-        />
       </Modal>
     </div>
   );
