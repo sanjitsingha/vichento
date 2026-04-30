@@ -95,10 +95,26 @@ export default function ReadArticlePage() {
       // ✅ mark instantly (optimistic)
       localStorage.setItem(storageKey, "true");
 
+      // Capture referrer source
+      let referrer = null;
+      try {
+        const ref = document.referrer;
+        if (ref) {
+          const refUrl = new URL(ref);
+          // Only store external referrers (not self-referrals)
+          if (refUrl.hostname !== window.location.hostname) {
+            referrer = refUrl.hostname;
+          }
+        }
+      } catch (e) {
+        // ignore invalid referrer URLs
+      }
+
       const { error } = await supabase.from("views").insert([
         {
           article_id: article.id,
           user_id: user?.id || null,
+          referrer: referrer,
         },
       ]);
 
