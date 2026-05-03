@@ -13,6 +13,13 @@ const Page = () => {
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null);
 
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = supabase.storage.from("article-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   // 🔹 Fetch Bookmarks
   useEffect(() => {
     if (!user) return;
@@ -91,15 +98,10 @@ const Page = () => {
 
   return (
     <div className="w-full md:p-0 p-4">
-      <div className="mx-auto max-w-[800px] pt-6 md:pt-10">
+      <div className="max-w-3xl mx-auto px-4 md:px-6 pt-16 font-creato">
 
         {/* Header */}
-        <div className="w-full flex justify-between items-center pb-3 border-b border-gray-300 mb-6">
-          <p className="text-[24px] tracking-tight text-black font-creato">
-            Reading List
-          </p>
-          <IoBookmark className="text-gray-500" size={22} />
-        </div>
+        <h1 className="text-4xl font-semibold tracking-tight text-black mb-12">Library</h1>
 
         {/* Content Box */}
         <div className="w-full h-fit border border-gray-300 rounded-lg">
@@ -131,11 +133,11 @@ const Page = () => {
                   {/* Thumbnail placeholder */}
                   <div>
                     <Image
-                      src={item.articles?.cover_image || "/placeholder.png"}
+                      src={getImageUrl(item.articles?.cover_image) || "/placeholder.png"}
                       width={120}
                       height={90}
                       alt={item.articles?.title}
-                      className="object-cover rounded"
+                      className="object-cover rounded w-[120px] h-[90px]"
                     />
                   </div>
 

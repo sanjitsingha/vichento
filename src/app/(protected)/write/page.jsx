@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import LoadingBar from "react-top-loading-bar";
 import { useAuthContext } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 
@@ -35,6 +35,8 @@ export default function CreatePage() {
   const loadingBarRef = useRef(null);
   const { user } = useAuthContext();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get("id");
 
   /* editor refs */
   const editorRef = useRef(null);
@@ -68,6 +70,38 @@ export default function CreatePage() {
     twitterCard: true, schemaType: "article", focusKw: "", nofollow: false,
   });
   const setSeoField = (k, v) => setSeo(s => ({ ...s, [k]: v }));
+
+  useEffect(() => {
+    if (draftId && user) {
+      const fetchDraft = async () => {
+        const { data, error } = await supabase.from("articles").select("*").eq("id", draftId).single();
+        if (data) {
+          setTitle(data.title || "");
+          if (titleRef.current) titleRef.current.value = data.title || "";
+
+          setShortDesc(data.meta_description || "");
+          if (subRef.current) subRef.current.value = data.meta_description || "";
+
+          setCoverUrl(data.cover_image || "");
+          setCover(data.cover_image || "");
+
+          if (editorRef.current) {
+            editorRef.current.innerHTML = data.content || "";
+            setWc((data.content || "").replace(/<[^>]*>?/gm, '').trim().split(/\s+/).filter(Boolean).length);
+          }
+
+          setSelCats(data.categories || []);
+
+          setSeo({
+            metaTitle: data.seo_title || "", metaDesc: data.seo_description || "", slug: data.seo_slug || "", canonical: data.canonical_url || "",
+            ogTitle: data.og_title || "", ogDesc: data.og_description || "", robots: data.robots || "index",
+            twitterCard: data.twitter_card ?? true, schemaType: data.schema_type || "article", focusKw: data.focus_keyword || "", nofollow: data.nofollow_links || false,
+          });
+        }
+      };
+      fetchDraft();
+    }
+  }, [draftId, user]);
 
   const showToast = (msg, type = "ok") => {
     setToast({ msg, type, show: true });
@@ -157,7 +191,7 @@ export default function CreatePage() {
 
   const saveDraft = async () => {
     try {
-      const { error } = await supabase.from("articles").insert([{
+      const payload = {
         title: title || "Untitled draft",
         content: editorRef.current?.innerHTML || "",
         meta_description: shortDesc,
@@ -177,7 +211,17 @@ export default function CreatePage() {
         schema_type: seo.schemaType,
         focus_keyword: seo.focusKw || null,
         nofollow_links: seo.nofollow,
-      }]);
+      };
+
+      let error;
+      if (draftId) {
+        const { error: updateError } = await supabase.from("articles").update(payload).eq("id", draftId);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase.from("articles").insert([payload]);
+        error = insertError;
+      }
+
       if (error) throw error;
       showToast("Draft saved");
       router.push("/stories");
@@ -193,7 +237,7 @@ export default function CreatePage() {
       loadingBarRef.current?.continuousStart();
       const slug = seo.slug || generateSlug(title);
 
-      const { error } = await supabase.from("articles").insert([{
+      const payload = {
         title: title || "Untitled article",
         content: editorRef.current?.innerHTML || "",
         meta_description: shortDesc,
@@ -215,7 +259,16 @@ export default function CreatePage() {
         schema_type: seo.schemaType,
         focus_keyword: seo.focusKw || null,
         nofollow_links: seo.nofollow,
-      }]);
+      };
+
+      let error;
+      if (draftId) {
+        const { error: updateError } = await supabase.from("articles").update(payload).eq("id", draftId);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase.from("articles").insert([payload]);
+        error = insertError;
+      }
 
       if (error) throw error;
       loadingBarRef.current?.complete();
@@ -387,7 +440,7 @@ export default function CreatePage() {
       </div>
 
       {/* Word Count Floating */}
-      <div className={`fixed bottom-6 left-8 text-xs text-gray-400 font-mono font-medium z-50 pointer-events-none transition-opacity ${seoOpen ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`fixed bottom-6 right-8 text-xs text-gray-400 font-mono font-medium z-50 pointer-events-none transition-opacity ${seoOpen ? 'opacity-0' : 'opacity-100'}`}>
         {wc} {wc === 1 ? "word" : "words"}
       </div>
 

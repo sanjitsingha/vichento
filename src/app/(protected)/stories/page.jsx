@@ -27,6 +27,13 @@ const page = () => {
   const [publishedArticles, setPublishedArticles] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith("http")) return path;
+    const { data } = supabase.storage.from("article-images").getPublicUrl(path);
+    return data.publicUrl;
+  };
+
 
   const [activeMenu, setActiveMenu] = useState(null);
 
@@ -152,7 +159,7 @@ const page = () => {
                 {drafts.map((draft) => (
                   <div key={draft.id} className="py-6 flex items-start border-b border-gray-100 gap-6 group">
                     <div className="flex-1">
-                      <Link href={`/read/${draft.slug || draft.id}`}>
+                      <Link href={`/write?id=${draft.id}`}>
                         <h2 className="text-[20px] font-bold text-black mb-2 line-clamp-2 group-hover:underline decoration-gray-300 underline-offset-4 leading-snug">
                           {draft.title || "Untitled Draft"}
                         </h2>
@@ -174,7 +181,7 @@ const page = () => {
                     {draft.cover_image && (
                       <div className="hidden sm:block shrink-0">
                         <Image
-                          src={draft.cover_image}
+                          src={getImageUrl(draft.cover_image)}
                           width={112}
                           height={112}
                           alt="Cover Image"
@@ -197,7 +204,7 @@ const page = () => {
                       {activeMenu === draft.id && (
                         <div className="absolute right-0 top-8 w-48 bg-white border border-gray-100 shadow-lg rounded-xl overflow-hidden z-50 py-1">
                           <Link
-                            href={`/read/${draft.slug || draft.id}`}
+                            href={`/write?id=${draft.id}`}
                             className="flex px-4 py-2.5 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors items-center gap-3"
                             onClick={() => setActiveMenu(null)}
                           >
@@ -252,7 +259,7 @@ const page = () => {
                     {article.cover_image && (
                       <div className="hidden sm:block shrink-0">
                         <Image
-                          src={article.cover_image}
+                          src={getImageUrl(article.cover_image)}
                           width={112}
                           height={112}
                           alt={article.title}

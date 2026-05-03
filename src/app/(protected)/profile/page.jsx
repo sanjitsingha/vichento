@@ -416,7 +416,7 @@ const Page = () => {
             <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setUsernameModalOpen(true)}>
               <div className="space-y-1 flex-1 pr-4">
                 <h2 className="text-[15px] font-medium text-black">Username</h2>
-                <p className="text-sm text-gray-500 line-clamp-1">{user?.prefs?.username || "—"}</p>
+                <p className="text-sm text-gray-500 line-clamp-1">{profile?.username || "Add a username"}</p>
               </div>
               <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
             </div>
@@ -424,7 +424,7 @@ const Page = () => {
             <div className="flex items-center justify-between py-6 border-b border-gray-200 cursor-pointer group" onClick={() => setBioModalOpen(true)}>
               <div className="space-y-1 flex-1 pr-4">
                 <h2 className="text-[15px] font-medium text-black">Short bio</h2>
-                <p className="text-sm text-gray-500 line-clamp-2">{user?.prefs?.bio || "—"}</p>
+                <p className="text-sm text-gray-500 line-clamp-2">{profile?.bio || "Add a short bio"}</p>
               </div>
               <p className="text-sm text-gray-400 group-hover:text-black transition-colors">Edit</p>
             </div>
