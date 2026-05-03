@@ -3,6 +3,7 @@
 import ProtectedRoute from "../components/ProtectedRoute";
 import Sidebar from "../components/Sidebar";
 import MobileNav from "../components/MobileNav";
+
 export default function ProtectedLayout({ children }) {
   return (
     <ProtectedRoute>

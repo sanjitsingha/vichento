@@ -96,15 +96,15 @@ const page = () => {
           <>
             {/* Stat Cards */}
             <div className="w-full grid grid-cols-3 gap-6 mb-14">
-              <div className="py-6 px-5 border border-gray-200 rounded-xl">
+              <div className="py-6 px-5 ">
                 <p className="text-[13px] text-gray-500 mb-1 tracking-wide uppercase">Stories Published</p>
                 <p className="text-4xl font-bold text-black tracking-tight">{publishedArticles.length}</p>
               </div>
-              <div className="py-6 px-5 border border-gray-200 rounded-xl">
+              <div className="py-6 px-5 ">
                 <p className="text-[13px] text-gray-500 mb-1 tracking-wide uppercase">Views</p>
                 <p className="text-4xl font-bold text-black tracking-tight">{stats.totalViews}</p>
               </div>
-              <div className="py-6 px-5 border border-gray-200 rounded-xl">
+              <div className="py-6 px-5  ">
                 <p className="text-[13px] text-gray-500 mb-1 tracking-wide uppercase">Likes</p>
                 <p className="text-4xl font-bold text-black tracking-tight">{stats.totalLikes}</p>
               </div>
