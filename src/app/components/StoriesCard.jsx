@@ -1,44 +1,40 @@
 import Image from "next/image";
 import Link from "next/link";
-import HTMLReactParser from "html-react-parser";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { IMAGE_PLACEHOLDER } from "@/lib/constants";
+import { formatDate, getExcerpt, getImageUrl, readingTime } from "@/lib/articleUtils";
+import Avatar from "./ui/Avatar";
 
 const StoriesCard = ({ post }) => {
-  const imageUrl = post.cover_image || "/vichento-image-placeholder.png";
-  const avatarUrl = post.users?.avatar || "/default-avatar.jpg";
+  const imageUrl = getImageUrl(post.cover_image) || IMAGE_PLACEHOLDER;
   const authorName = post.users?.name || post.author_name || "Author";
-  const createdAt = post.created_at || post.updated_at;
+  const createdAt = post.published_at || post.created_at || post.updated_at;
 
   return (
-    <Link href={`/read/${post.slug}`}>
-      <div className="w-full md:w-[380px]">
+    <Link href={`/read/${post.slug}`} className="group block w-full">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-sm bg-gray-100">
         <Image
           src={imageUrl}
-          width={600}
-          height={400}
-          className="w-full h-[200px] object-cover rounded-sm"
+          fill
+          sizes="(min-width: 768px) 360px, 100vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           alt={post.title}
         />
-
-        <div className="py-2">
-          <p className="text-xl font-creato font-regular tracking-tight">
-            {post.title}
-          </p>
-
-          <p className="text-xs mt-2 text-black/40 line-clamp-2">
-            {HTMLReactParser(sanitizeHtml(post.content || ""))}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 mt-2">
-          <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 relative">
-            <Image src={avatarUrl} fill alt="" className="object-cover" />
-          </div>
-          <span className="text-[12px] text-gray-500">
-            {authorName} | {createdAt ? new Date(createdAt).toDateString() : ""}
-          </span>
-        </div>
       </div>
+
+      <div className="mt-4 flex items-center gap-2">
+        <Avatar src={post.users?.avatar} name={authorName} size={20} />
+        <span className="text-[13px] text-gray-600">{authorName}</span>
+      </div>
+
+      <h3 className="mt-2 line-clamp-2 font-creato text-xl font-bold leading-snug tracking-tight text-black">
+        {post.title}
+      </h3>
+
+      <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">{getExcerpt(post, 140)}</p>
+
+      <p className="mt-3 text-[13px] text-gray-500">
+        {formatDate(createdAt)} · {readingTime(post.content)} min read
+      </p>
     </Link>
   );
 };

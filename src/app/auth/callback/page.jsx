@@ -1,55 +1,65 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { ensureUserProfile } from "@/lib/userUtils";
+import { useAuthContext } from "@/context/AuthContext";
+import { getNextPath } from "@/app/components/AuthShell";
 
 export default function AuthCallback() {
   const router = useRouter();
+  const { refreshProfile } = useAuthContext();
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     const handleUser = async () => {
-      // 1. Get user
-      const { data: { user }, error } = await supabase.auth.getUser();
+      // getSession() waits for supabase-js to finish reading the tokens/code
+      // from the URL (OAuth or email-confirmation redirect).
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error(error);
+      if (error || !session?.user) {
+        console.error("Auth callback failed:", error);
+        setFailed(true);
         return;
       }
 
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      // 2. Check if user exists in DB
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-
-      // 3. If NOT → create user
-      if (!existingUser) {
-        const name = user.user_metadata.full_name || "User";
-
-        await supabase.from("users").insert([
-          {
-            id: user.id,
-            email: user.email,
-            name,
-            username: name.toLowerCase().replace(/\s+/g, "") + Math.floor(1000 + Math.random() * 9000),
-            avatar: user.user_metadata.avatar_url,
-          },
-        ]);
-      }
-
-      // 4. Redirect
-      router.push("/");
+      await ensureUserProfile(session.user);
+      await refreshProfile();
+      router.replace(getNextPath());
     };
 
     handleUser();
-  }, [router]);
+  }, [router, refreshProfile]);
 
-  return <p>Logging you in...</p>;
+  if (failed) {
+    return (
+      <div className="flex h-[calc(100vh-64px)] flex-col items-center justify-center px-6 text-center">
+        <h1 className="font-creato text-2xl font-bold text-black">
+          We couldn&apos;t sign you in
+        </h1>
+        <p className="mt-2 max-w-sm text-sm text-gray-500">
+          The link may have expired or already been used. Please try again.
+        </p>
+        <Link
+          href="/signin"
+          className="mt-6 rounded-full bg-black px-6 py-2.5 text-sm text-white hover:bg-gray-800"
+        >
+          Back to sign in
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-4">
+      <Image src="/logo.png" alt="" width={56} height={56} priority className="animate-pulse" />
+      <p className="text-sm text-gray-500">Signing you in…</p>
+    </div>
+  );
 }

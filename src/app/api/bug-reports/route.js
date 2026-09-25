@@ -19,9 +19,10 @@ export async function POST(request) {
         {
           title: body.title,
           description: body.description,
-          steps_to_reproduce: body.steps,
-          expected_behavior: body.expected_behavior,
-          actual_behavior: body.actual_behavior,
+          // These columns are NOT NULL in BUG_REPORTS_SETUP.sql but optional in the form.
+          steps_to_reproduce: body.steps || "",
+          expected_behavior: body.expected_behavior || "",
+          actual_behavior: body.actual_behavior || "",
           severity: body.severity || "medium",
           page_url: body.page_url || null,
           attachments: body.attachments || null,

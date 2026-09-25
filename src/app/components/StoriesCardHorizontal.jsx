@@ -2,17 +2,20 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PiThumbsUp, PiThumbsUpFill } from "react-icons/pi";
-import { IoBookmarkOutline, IoBookmark } from "react-icons/io5";
-import { useAuthContext } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { TbBookmarks, TbBookmarksFilled } from "react-icons/tb";
+import { RxShare2 } from "react-icons/rx";
+import { useAuthContext } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import {
-  AiFillLike,
-  AiOutlineLike,
-  AiFillDislike,
-  AiOutlineDislike,
-} from "react-icons/ai";
+  formatDate,
+  getExcerpt,
+  getImageUrl,
+  readingTime,
+  shareLink,
+} from "@/lib/articleUtils";
+import Avatar from "./ui/Avatar";
 
 function StoriesCardHorizontal({
   article,
@@ -22,121 +25,138 @@ function StoriesCardHorizontal({
   onBookmark,
 }) {
   const { user } = useAuthContext();
-  const handleLike = React.useCallback(
-    () => onLike(article.id),
-    [onLike, article.id],
-  );
-  const handleBookmark = React.useCallback(
-    () => onBookmark(article.id),
-    [onBookmark, article.id],
-  );
+  const router = useRouter();
+  const toast = useToast();
 
-  /* ================= IMAGE HELPERS ================= */
-  const getImageUrl = (path) => {
-    if (!path) return null;
+  const imageUrl = article.thumbnail || getImageUrl(article.cover_image);
+  const authorHref = `/profile/${article.author_username || article.author_id}`;
+  const isOwn = user?.id && user.id === article.author_id;
+  const firstTopic = article.categories?.[0];
 
-    const { data } = supabase.storage.from("article-images").getPublicUrl(path);
-
-    return data.publicUrl;
+  const requireUser = () => {
+    if (user) return true;
+    router.push("/signin");
+    return false;
   };
 
-  const imageUrl = article.thumbnail || getImageUrl(article.featured_image);
-  const avatarPhoto = article.author_avatar;
+  const handleLike = async () => {
+    if (!requireUser() || !onLike) return;
+    const ok = await onLike(article.id);
+    if (ok === false) toast("Couldn't update like", "error");
+  };
+
+  const handleBookmark = async () => {
+    if (!requireUser() || !onBookmark) return;
+    const ok = await onBookmark(article.id);
+    if (ok === false) toast("Couldn't update your list", "error");
+    else if (ok) toast(isBookmarked ? "Removed from your list" : "Saved to your list");
+  };
+
+  const handleShare = async () => {
+    const result = await shareLink({
+      title: article.title,
+      url: `${window.location.origin}/read/${article.slug}`,
+    });
+    if (result === "copied") toast("Link copied");
+  };
 
   return (
-    <div className="border-b border-gray-200 pb-10 mb-10">
+    <article className="group/card border-b border-gray-100 py-8 first:pt-2">
       {/* ================= AUTHOR ================= */}
-      <div className="flex items-center gap-3 text-xs text-gray-500">
-        <Link
-          href={`/profile/${article.author_username || article.author_id}`}
-          className="flex items-center gap-3 group"
-        >
-          <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-200">
-            {avatarPhoto && (
-              <Image
-                src={avatarPhoto}
-                alt="author"
-                width={24}
-                height={24}
-                className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
-              />
-            )}
-          </div>
-
-          <p className="group-hover:text-black transition-colors font-medium">
-            {user?.id === article.author_id
-              ? user?.user_metadata?.name || "You"
-              : article.author_name}
-          </p>
+      <div className="flex items-center gap-2 text-[13px] text-gray-600">
+        <Link href={authorHref} className="flex items-center gap-2 hover:text-black">
+          <Avatar src={article.author_avatar} name={article.author_name} size={22} />
+          <span className="font-medium">
+            {isOwn ? "You" : article.author_name}
+          </span>
         </Link>
-
-        <span>·</span>
-
-        <p>
-          {article.updated_at
-            ? new Date(article.updated_at).toDateString()
-            : ""}
-        </p>
+        {firstTopic && (
+          <>
+            <span className="text-gray-400">in</span>
+            <Link
+              href={`/explore?category=${encodeURIComponent(firstTopic)}`}
+              className="font-medium hover:text-black"
+            >
+              {firstTopic}
+            </Link>
+          </>
+        )}
       </div>
 
       {/* ================= CONTENT ================= */}
-      <Link href={`/read/${article.slug}`}>
-        <div className="flex gap-2 mt-2 cursor-pointer">
-          <div className="flex-1">
-            <h2 className="text-[22px] md:text-[24px] font-creato font-bold tracking-tight text-black line-clamp-2 md:line-clamp-none">
-              {article.title}
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-4 line-clamp-2">
-              {article.content?.replace(/<[^>]*>/g, "").slice(0, 220)}…
+      <Link href={`/read/${article.slug}`} className="mt-3 flex gap-6 sm:gap-10">
+        <div className="min-w-0 flex-1">
+          <h2 className="line-clamp-3 font-creato text-[18px] font-bold leading-snug tracking-tight text-black sm:line-clamp-2 md:text-[22px]">
+            {article.title}
+          </h2>
+          <div className="hidden sm:block">
+            <p className="mt-2 line-clamp-2 text-[15px] leading-relaxed text-gray-500">
+              {getExcerpt(article)}
             </p>
           </div>
+        </div>
 
-          {imageUrl && (
+        {imageUrl && (
+          <div className="relative h-[56px] w-[80px] shrink-0 overflow-hidden rounded-sm bg-gray-100 sm:h-[107px] sm:w-[160px]">
             <Image
               src={imageUrl}
-              alt={article.title}
-              width={600}
-              height={400}
-              className="w-[130px] h-[70px] md:w-[180px] md:h-[120px] object-cover rounded"
+              alt=""
+              fill
+              sizes="(min-width: 640px) 160px, 80px"
+              className="object-cover transition-transform duration-500 group-hover/card:scale-[1.03]"
             />
-          )}
-        </div>
+          </div>
+        )}
       </Link>
 
-      {/* ================= ACTIONS ================= */}
-      <div className="flex gap-8 my-4 text-gray-500 hidden">
-        {/* LIKE */}
-        <button
-          onClick={handleLike}
-          className="cursor-pointer transition-transform active:scale-95"
-        >
-          {isLiked ? (
-            <AiFillLike size={22} className="text-black" />
-          ) : (
-            <AiOutlineLike
-              size={22}
-              className="text-gray-500 hover:text-black transition-colors"
-            />
-          )}
-        </button>
+      {/* ================= META + ACTIONS ================= */}
+      <div className="mt-4 flex items-center justify-between text-[13px] text-gray-500">
+        <div className="flex items-center gap-2">
+          <span>{formatDate(article.published_at || article.updated_at || article.created_at)}</span>
+          <span aria-hidden>·</span>
+          <span>{readingTime(article.content)} min read</span>
+        </div>
 
-        {/* BOOKMARK */}
-        <button
-          onClick={() => onBookmark(article.id)}
-          className="cursor-pointer transition-transform active:scale-95"
-        >
-          {isBookmarked ? (
-            <TbBookmarksFilled size={22} className="text-black" />
-          ) : (
-            <TbBookmarks
-              size={22}
-              className="text-gray-500 hover:text-black transition-colors"
-            />
-          )}
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleLike}
+            aria-label={isLiked ? "Unlike" : "Like"}
+            aria-pressed={!!isLiked}
+            title="Like"
+            className="transition-transform active:scale-90"
+          >
+            {isLiked ? (
+              <AiFillLike size={19} className="text-black" />
+            ) : (
+              <AiOutlineLike size={19} className="transition-colors hover:text-black" />
+            )}
+          </button>
+
+          <button
+            onClick={handleBookmark}
+            aria-label={isBookmarked ? "Remove from list" : "Save to list"}
+            aria-pressed={!!isBookmarked}
+            title="Save"
+            className="transition-transform active:scale-90"
+          >
+            {isBookmarked ? (
+              <TbBookmarksFilled size={19} className="text-black" />
+            ) : (
+              <TbBookmarks size={19} className="transition-colors hover:text-black" />
+            )}
+          </button>
+
+          <button
+            onClick={handleShare}
+            aria-label="Share"
+            title="Share"
+            className="transition-transform active:scale-90"
+          >
+            <RxShare2 size={17} className="transition-colors hover:text-black" />
+          </button>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 export default React.memo(StoriesCardHorizontal);

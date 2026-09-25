@@ -1,10 +1,11 @@
 import React from 'react'
+export const metadata = { title: 'Privacy Policy' };
 
 const page = () => {
   return (
     <div className='w-full'>
-      <div className='max-w-[800px] w-full mx-auto md:pt-10 p-4'>
-        <h1 className='text-2xl font-creato text-black '>Privacy Policy</h1>
+      <div className='max-w-[800px] w-full mx-auto md:pt-16 pt-10 px-4 pb-20'>
+        <h1 className='text-3xl md:text-4xl font-bold tracking-tight font-creato text-black'>Privacy Policy</h1>
         <p className='text-xs text-gray-500 mt-2'>Effective Date: March 23, 2026</p>
         <section>
           <p className='text-gray-600 text-sm mt-4'>
@@ -17,7 +18,7 @@ const page = () => {
           <div>
             <h2 className='font-bold mt-3'>1. Information We Collect</h2>
             <p className='text-sm font-semibold mt-2'>a. Personal Information</p>
-            <p className='text-sm text-gray-500 mt-2'>
+            <div className='text-sm text-gray-500 mt-2'>
               When you register or use Vichento, we may collect:
 
               <ul className='list-disc list-inside mt-2 '>
@@ -27,7 +28,7 @@ const page = () => {
                 <li>User preferences (e.g., sports, entertainment)</li>
                 <li>Any additional profile details you provide</li>
               </ul>
-            </p>
+            </div>
 
             <p className='text-sm font-semibold mt-2'>b. User-Generated Content</p>
             <p className='text-sm text-gray-500 mt-2'>
@@ -38,7 +39,7 @@ const page = () => {
               We use Supabase Authentication, which may collect and process login credentials securely.
             </p>
             <p className='text-sm font-semibold mt-2'>d. Usage Data</p>
-            <p className='text-sm text-gray-500 mt-2'>
+            <div className='text-sm text-gray-500 mt-2'>
               We automatically collect certain information, including:
 
               <ul className='list-disc list-inside mt-2 '>
@@ -48,7 +49,7 @@ const page = () => {
                 <li>Pages visited and time spent</li>
                 <li>Interaction behavior on the platform</li>
               </ul>
-            </p>
+            </div>
           </div>
 
 

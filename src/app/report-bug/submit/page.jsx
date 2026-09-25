@@ -72,10 +72,6 @@ const BugSubmitPage = () => {
         page: "",
         attachments: "",
       });
-
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 5000);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
       console.error("Error submitting bug report:", err);

@@ -1,8 +1,25 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+::selection {
+  background: #fde2dc;
+  color: #111;
+}
+
+:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
 }
 
 @font-face {
@@ -184,6 +201,15 @@ html {
 body {
   color: var(--foreground);
   font-family: Helvetica, sans-serif;
+  background: var(--background);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Editor placeholder for empty contentEditable */
+[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #b3b3b3;
+  pointer-events: none;
 }
 
 .shimmer {
@@ -239,11 +265,46 @@ body {
   animation: dropdownFade 0.20s ease-in-out;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.hide-scrollbar {
+.hide-scrollbar,
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* ---------- Modal / toast / menu motion ---------- */
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes contentIn {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-overlay[data-state="open"] { animation: overlayIn 0.18s ease-out; }
+.modal-content[data-state="open"] { animation: contentIn 0.2s ease-out; }
+.animate-toast { animation: toastIn 0.2s ease-out; }
+.animate-fade-up { animation: fadeUp 0.5s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

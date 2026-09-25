@@ -30,12 +30,13 @@ const menu = [
   },
   { name: "Stats", href: "/stats", outline: ChartOutline, solid: ChartSolid },
 ];
+
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex flex-col sticky top-[64px] w-60 h-[calc(100vh-64px)]  py-8">
-      <nav className="flex flex-col gap-2 px-6">
+    <aside className="sticky top-[64px] hidden h-[calc(100vh-64px)] w-60 shrink-0 flex-col py-8 md:flex">
+      <nav className="flex flex-col gap-1 px-6">
         {menu.map((item) => {
           const active =
             item.href === "/"
@@ -47,31 +48,32 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`relative flex items-center gap-3 px-6 py-2.5 text-[15px] transition-all
-        ${active ? "text-black" : "text-black/50 hover:text-black"}
-      `}
+              aria-current={active ? "page" : undefined}
+              className={`relative flex items-center gap-3 px-6 py-2.5 text-[15px] transition-colors ${
+                active ? "text-black" : "text-black/50 hover:text-black"
+              }`}
             >
               {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-black rounded-full" />
+                <span className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-black" />
               )}
-              <Icon className="w-5 h-5" />
+              <Icon className="h-5 w-5" />
               {item.name}
             </Link>
           );
         })}
       </nav>
-      {/* <div className=" flex flex-col w-full  h-full">
-        <div className="flex-1"></div>
-        <div className=" flex gap-4 pl-8">
-          <Link target="_blank" href="/privacy-policy" className="text-black/30 border-r pr-4 border-gray-300 text-[11px] font-medium">
-            Privacy Policy
-          </Link>
-          <Link target="_blank" href="/terms-and-conditions" className="text-black/30 text-[11px] font-medium">
-            Terms and conditions
-          </Link>
-        </div>
 
-      </div> */}
+      <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1 px-12 text-[11px] text-black/35">
+        <Link href="/privacy-policy" className="hover:text-black/70">
+          Privacy
+        </Link>
+        <Link href="/terms-and-conditions" className="hover:text-black/70">
+          Terms
+        </Link>
+        <Link href="/report-bug" className="hover:text-black/70">
+          Help
+        </Link>
+      </div>
     </aside>
   );
 }

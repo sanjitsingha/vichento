@@ -3,8 +3,9 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
+        // Any Supabase project storage (avatars, covers, inline images)
         protocol: "https",
-        hostname: "plwijljbqehnmjllwkbk.supabase.co",
+        hostname: "*.supabase.co",
       },
       {
         protocol: "https",

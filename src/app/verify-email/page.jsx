@@ -1,29 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { EnvelopeOpenIcon } from "@heroicons/react/24/outline";
 import { supabase } from "@/lib/supabaseClient";
+import AuthShell, { primaryButtonClass } from "@/app/components/AuthShell";
 
 export default function VerifyPending() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState(null);
   const [cooldown, setCooldown] = useState(0);
   const [email, setEmail] = useState("");
+  const timer = useRef(null);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data.user) return;
+    const fromUrl = new URLSearchParams(window.location.search).get("email");
+    if (fromUrl) setEmail(fromUrl);
 
-      setEmail(data.user.email || "");
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data?.user) return;
+      if (!fromUrl) setEmail(data.user.email || "");
+      if (data.user.email_confirmed_at) router.replace("/");
+    });
 
-      if (data.user.email_confirmed_at) {
-        router.push("/");
-      }
-    };
-
-    checkUser();
+    return () => clearInterval(timer.current);
   }, [router]);
 
   const handleResend = async () => {
@@ -31,7 +33,7 @@ export default function VerifyPending() {
 
     try {
       setLoading(true);
-      setMsg("");
+      setMsg(null);
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
       const { error } = await supabase.auth.resend({
@@ -44,12 +46,13 @@ export default function VerifyPending() {
 
       if (error) throw error;
 
-      setMsg("Verification email sent again.");
+      setMsg({ ok: true, text: "Verification email sent again." });
       setCooldown(30);
-      const timer = setInterval(() => {
+      clearInterval(timer.current);
+      timer.current = setInterval(() => {
         setCooldown((prev) => {
           if (prev <= 1) {
-            clearInterval(timer);
+            clearInterval(timer.current);
             return 0;
           }
           return prev - 1;
@@ -57,43 +60,54 @@ export default function VerifyPending() {
       }, 1000);
     } catch (err) {
       console.error(err);
-      setMsg("Failed to resend email");
+      setMsg({ ok: false, text: "Failed to resend email. Please try again shortly." });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen flex flex-col items-center justify-center text-center px-6">
-      <h1 className="text-2xl font-semibold mb-4">Verify your email</h1>
+    <AuthShell
+      title="Check your inbox"
+      subtitle="Click the link we sent to finish creating your account."
+      redirectIfAuthed={false}
+      footer={
+        <>
+          <p className="text-xs text-black/50">
+            Didn&apos;t receive it? Check your spam folder, or resend below.
+          </p>
+          <Link
+            href="/signin"
+            className="mt-4 inline-block text-sm text-black/60 underline underline-offset-2 hover:text-black"
+          >
+            Back to sign in
+          </Link>
+        </>
+      }
+    >
+      <div className="flex flex-col items-center text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#fdeeea] text-primary">
+          <EnvelopeOpenIcon className="size-7" />
+        </span>
+        <p className="mt-5 text-sm text-black/60">We sent a verification link to</p>
+        <p className="mt-1 break-all text-sm font-medium text-black">
+          {email || "your email address"}
+        </p>
 
-      <p className="text-sm text-black/60 mb-2 max-w-sm">
-        We have sent a verification link to:
-      </p>
+        <button
+          onClick={handleResend}
+          disabled={loading || cooldown > 0 || !email}
+          className={`${primaryButtonClass} mt-8`}
+        >
+          {loading ? "Sending…" : cooldown > 0 ? `Resend in ${cooldown}s` : "Resend email"}
+        </button>
 
-      <p className="text-sm font-medium mb-6">{email || "your email"}</p>
-
-      <p className="text-xs text-black/50 mb-6 max-w-sm">
-        Please check your inbox and click the link to continue.
-      </p>
-
-      <button
-        onClick={handleResend}
-        disabled={loading || cooldown > 0 || !email}
-        className="bg-black text-white px-6 py-2 rounded-full disabled:opacity-60"
-      >
-        {loading
-          ? "Sending..."
-          : cooldown > 0
-            ? `Wait ${cooldown}s`
-            : "Resend Email"}
-      </button>
-
-      {msg && <p className="text-sm mt-4 text-green-600">{msg}</p>}
-
-      <p className="text-xs text-black/40 mt-6">
-        Did not receive the email? Check your spam folder.
-      </p>
-    </div>
+        {msg && (
+          <p className={`mt-4 text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>
+            {msg.text}
+          </p>
+        )}
+      </div>
+    </AuthShell>
   );
 }

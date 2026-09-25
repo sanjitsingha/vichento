@@ -2,35 +2,32 @@
 import Link from "next/link";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import GoogleSignInButton from "../components/GoogleSignInButton";
-import Image from "next/image";
+import AuthShell, { LegalNote, optionButtonClass } from "../components/AuthShell";
 
 export default function SignUpOptions() {
   return (
-    <div className="w-full h-[calc(100vh-200px)] flex flex-col justify-center items-center px-6">
-      <Image width={60} height={60} alt="logo" src={"/logo.png"} />
-      <h1 className="text-xl text-black font-creato tracking-tight my-10">
-        Vichento - Read. Write. Think deeper.{" "}
-      </h1>
-
-      <GoogleSignInButton />
-      <Link
-        href="/signup/email"
-        className="border w-[280px] py-2 mt-3 text-black rounded-full text-center flex items-center justify-center gap-2"
-      >
-        <EnvelopeIcon className="size-5" />
-        Sign up with email
-      </Link>
-
-      <p className="text-sm text-black mt-6">
-        Already have an account?{" "}
-        <Link href="/signin" className="underline">
-          Sign in
+    <AuthShell
+      title="Join Vichento."
+      subtitle="Read. Write. Think deeper."
+      footer={
+        <>
+          <p className="text-sm text-black">
+            Already have an account?{" "}
+            <Link href="/signin" className="font-medium underline underline-offset-2">
+              Sign in
+            </Link>
+          </p>
+          <LegalNote action="Sign up" />
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <GoogleSignInButton label="Sign up with Google" />
+        <Link href="/signup/email" className={optionButtonClass}>
+          <EnvelopeIcon className="size-5" />
+          Sign up with email
         </Link>
-      </p>
-      <p className="text-[12px] text-center  text-black/60 mt-6">
-        By clicking &quot;Sign up&quot;, you accept Vichento&apos;s Terms of
-        Service and Privacy Policy.
-      </p>
-    </div>
+      </div>
+    </AuthShell>
   );
 }

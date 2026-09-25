@@ -6,38 +6,34 @@ import { useAuthContext } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function ProfileRedirect() {
-  const { user, loading } = useAuthContext();
+  const { user, profile, loading } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push("/signin");
-      } else {
-        const fetchUser = async () => {
-          const { data } = await supabase
-            .from("users")
-            .select("username")
-            .eq("id", user.id)
-            .single();
-
-          if (data?.username) {
-            router.replace(`/profile/${data.username}`);
-          } else {
-            // Fallback to user id if no username is set yet
-            router.replace(`/profile/${user.id}`);
-          }
-        };
-        fetchUser();
-      }
+    if (loading) return;
+    if (!user) {
+      router.replace("/signin?next=/profile");
+      return;
     }
-  }, [user, loading, router]);
+    if (profile?.username) {
+      router.replace(`/profile/${profile.username}`);
+      return;
+    }
+
+    // Profile not in context yet — look it up directly.
+    supabase
+      .from("users")
+      .select("username")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => router.replace(`/profile/${data?.username || user.id}`));
+  }, [user, profile, loading, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-white">
-      <div className="animate-pulse flex flex-col items-center gap-4">
-        <div className="h-12 w-12 rounded-full bg-gray-200"></div>
-        <div className="h-4 w-32 rounded bg-gray-200"></div>
+    <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-16 w-16 rounded-full shimmer" />
+        <div className="h-4 w-32 rounded shimmer" />
       </div>
     </div>
   );

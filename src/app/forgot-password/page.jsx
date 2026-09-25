@@ -1,82 +1,101 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
+import { SUPPORT_EMAIL } from "@/lib/constants";
+import AuthShell, {
+  FormError,
+  inputClass,
+  primaryButtonClass,
+} from "@/app/components/AuthShell";
 
 const Page = () => {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+    setError("");
     setLoading(true);
 
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appUrl}/profile`,
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${appUrl}/reset-password`,
       });
 
       if (error) throw error;
-
-      setMessage("Password reset email sent.");
-      setEmail("");
+      setSent(true);
     } catch (error) {
-      setMessage(error.message || "Failed to send password reset email.");
+      setError(error.message || "Failed to send password reset email.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="w-full">
-      <div className="max-w-[800px] w-full mx-auto pt-20 px-4">
-        <div>
-          <h1 className="text-3xl font-creato tracking-tight text-black">
-            Forgot Password
-          </h1>
-          <p className="text-sm mt-2 text-black/60">
-            No worries. Enter your email below and we will help you regain
-            access to your account.
-          </p>
-        </div>
-        <form className="py-6 flex flex-col" onSubmit={handleSubmit}>
-          <div className="w-full">
-            <label
-              className="block text-xs font-medium mt-4 text-gray-700"
-              htmlFor="email"
-            >
-              Registered Email
-            </label>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              id="email"
-              className="text-black font-semibold w-3/5 placeholder:text-gray-500 placeholder:font-medium border-b border-gray-300 focus:border-b-black outline-none py-1"
-              type="email"
-              required
-            />
-          </div>
+  if (sent) {
+    return (
+      <AuthShell
+        title="Check your inbox"
+        subtitle={`If an account exists for ${email}, you'll receive a link to reset your password shortly.`}
+        footer={
+          <Link href="/signin" className="text-sm text-black/60 underline underline-offset-2 hover:text-black">
+            Back to sign in
+          </Link>
+        }
+      >
+        <button
+          onClick={() => setSent(false)}
+          className="w-full text-center text-sm text-black/60 hover:text-black"
+        >
+          Didn&apos;t get it? Try another email
+        </button>
+      </AuthShell>
+    );
+  }
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-black px-8 text-sm cursor-pointer py-3 text-white font-medium mt-6 w-fit rounded-full disabled:opacity-60"
-          >
-            {loading ? "Sending..." : "Submit a request"}
-          </button>
-          {message && <p className="text-sm text-black/70 mt-4">{message}</p>}
-          <p className="text-sm text-black/60 mt-8">
-            Need urgent help? Contact support at{" "}
-            <span className="text-black font-semibold underline">
-              write.vichento@gmail.com
-            </span>
+  return (
+    <AuthShell
+      title="Forgot password"
+      subtitle="No worries. Enter your email and we'll send you a link to reset your password."
+      footer={
+        <>
+          <Link href="/signin" className="text-sm text-black/60 underline underline-offset-2 hover:text-black">
+            Back to sign in
+          </Link>
+          <p className="mt-6 text-[12px] text-black/50">
+            Need urgent help? Write to{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-black underline">
+              {SUPPORT_EMAIL}
+            </a>
           </p>
-        </form>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <form className="flex flex-col" onSubmit={handleSubmit}>
+        <label className="text-xs text-gray-700" htmlFor="email">
+          Registered email
+        </label>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          id="email"
+          autoComplete="email"
+          className={inputClass}
+          type="email"
+          required
+        />
+
+        <FormError>{error}</FormError>
+
+        <button type="submit" disabled={loading} className={`${primaryButtonClass} mt-8`}>
+          {loading ? "Sending…" : "Send reset link"}
+        </button>
+      </form>
+    </AuthShell>
   );
 };
 

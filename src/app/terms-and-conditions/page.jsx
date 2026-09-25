@@ -1,10 +1,11 @@
 import React from 'react'
+export const metadata = { title: 'Terms and Conditions' };
 
 const page = () => {
   return (
     <div className='w-full'>
-      <div className='mx-auto max-w-[800px] md:pt-10 p-4'>
-        <h1 className='text-2xl font-creato text-black '>Terms and Conditions</h1>
+      <div className='mx-auto max-w-[800px] md:pt-16 pt-10 px-4 pb-20'>
+        <h1 className='text-3xl md:text-4xl font-bold tracking-tight font-creato text-black'>Terms and Conditions</h1>
         <p className='text-xs text-gray-500 mt-2'>Effective Date: March 23, 2026</p>
         <section>
           <p className='text-sm text-gray-500 mt-3'>

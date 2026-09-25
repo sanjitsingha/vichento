@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import HTMLReactParser from "html-react-parser";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,14 +9,17 @@ import localFont from "next/font/local";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import { RxShare2 } from "react-icons/rx";
 import { TbBookmarks, TbBookmarksFilled } from "react-icons/tb";
+import { FaRegComment } from "react-icons/fa6";
 import { useAuthContext } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { supabase } from "@/lib/supabaseClient";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { buildAnalyticsPayload } from "@/lib/analyticsHelpers";
-import { HiOutlineDotsHorizontal } from "react-icons/hi";
-import { FaRegComment } from "react-icons/fa6";
+import { formatDate, getImageUrl, readingTime, shareLink } from "@/lib/articleUtils";
 import useUserActions from "@/hooks/useUserActions";
 import RelatedArticles from "@/app/components/RelatedArticles";
+import Responses from "@/app/components/Responses";
+import Avatar from "@/app/components/ui/Avatar";
 
 const sourceSerif = localFont({
   src: [
@@ -34,60 +37,59 @@ const sourceSerif = localFont({
   display: "swap",
 });
 
+function ReaderSkeleton() {
+  return (
+    <div className="mx-auto max-w-[720px] px-5 pt-14 md:px-0">
+      <div className="h-10 w-5/6 rounded shimmer" />
+      <div className="mt-3 h-10 w-2/3 rounded shimmer" />
+      <div className="mt-6 h-5 w-1/2 rounded shimmer" />
+      <div className="mt-8 flex items-center gap-3">
+        <div className="h-11 w-11 rounded-full shimmer" />
+        <div className="space-y-2">
+          <div className="h-3 w-32 rounded shimmer" />
+          <div className="h-3 w-24 rounded shimmer" />
+        </div>
+      </div>
+      <div className="mt-10 aspect-[16/9] w-full rounded shimmer" />
+      <div className="mt-10 space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-4 w-full rounded shimmer" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ReadArticlePage() {
   const { slug } = useParams();
+  const router = useRouter();
   const { user } = useAuthContext();
+  const toast = useToast();
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
-  const [editingId, setEditingId] = useState(null);
-  const [editText, setEditText] = useState("");
-  const [menuOpenId, setMenuOpenId] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [profile, setProfile] = useState(null);
-  const commentsRef = useRef(null);
+  const [likeCount, setLikeCount] = useState(0);
+  const [responseCount, setResponseCount] = useState(0);
+  const responsesRef = useRef(null);
 
   const { likes, bookmarks, toggleLike, toggleBookmark } = useUserActions(user);
-  const isLiked = likes.has(article?.id);
-  const isBookmarked = bookmarks.has(article?.id);
+  const isLiked = !!article && likes.has(article.id);
+  const isBookmarked = !!article && bookmarks.has(article.id);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData?.user) return;
-
-      const { data } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", authData.user.id)
-        .single();
-
-      setProfile(data);
-    };
-
-    fetchProfile();
-  }, []);
-
-  // console.log(profile, "avatar", profile?.avatar);
-
+  /* ---------- reading progress ---------- */
   useEffect(() => {
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollTop;
-      const scrollableHeight =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      setScrollProgress(
-        scrollableHeight > 0 ? (totalScroll / scrollableHeight) * 100 : 0,
-      );
+      const el = document.documentElement;
+      const scrollable = el.scrollHeight - el.clientHeight;
+      setScrollProgress(scrollable > 0 ? (el.scrollTop / scrollable) * 100 : 0);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* ---------- article ---------- */
   useEffect(() => {
     if (!slug) return;
 
@@ -102,81 +104,44 @@ export default function ReadArticlePage() {
               id,
               name,
               username,
-              avatar
+              avatar,
+              bio
             )
           `,
         )
-        .eq("slug", slug)
+        .eq("slug", decodeURIComponent(slug))
         .eq("status", "published")
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        console.error("Fetch article failed:", error);
-        setArticle(null);
-      } else {
-        setArticle(data);
-      }
-
+      if (error) console.error("Fetch article failed:", error);
+      setArticle(data || null);
       setLoading(false);
+
+      if (data) {
+        document.title = `${data.seo_title || data.title} | Vichento`;
+        const { count } = await supabase
+          .from("likes")
+          .select("*", { count: "exact", head: true })
+          .eq("article_id", data.id);
+        setLikeCount(count || 0);
+      }
     };
 
     fetchArticle();
   }, [slug]);
 
-  const fetchComments = async (articleId) => {
-    console.log("Fetching comments for:", articleId);
-
-    // Test 1: Simple fetch to see if table exists
-    const { data, error } = await supabase
-      .from("comments")
-      .select("*")
-      .eq("article_id", articleId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("FETCH ERROR MESSAGE:", error.message);
-      console.error("FETCH ERROR CODE:", error.code);
-      console.error("FETCH ERROR DETAILS:", error.details);
-    } else {
-      console.log("Successfully fetched raw comments:", data?.length);
-
-      // Test 2: Try fetching with user info if raw fetch worked
-      const { data: enrichedData, error: enrichedError } = await supabase
-        .from("comments")
-        .select(
-          `
-          *,
-          users:user_id (name, avatar),
-          comment_likes (user_id)
-        `,
-        )
-        .eq("article_id", articleId)
-        .order("created_at", { ascending: false });
-
-      if (enrichedError) {
-        console.error("ENRICHED FETCH ERROR:", enrichedError.message);
-        setComments(data || []); // Fallback to raw data
-      } else {
-        setComments(enrichedData || []);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (article?.id) {
-      fetchComments(article.id);
-    }
-  }, [article?.id, user?.id]);
-
+  /* ---------- view tracking (throttled to 1 per 5 min per reader) ---------- */
   useEffect(() => {
     if (!article?.id) return;
 
     const trackView = async () => {
       const storageKey = `viewed_${article.id}`;
-      const lastLocalView = parseInt(localStorage.getItem(storageKey), 10) || 0;
+      let lastLocalView = 0;
+      try {
+        lastLocalView = parseInt(localStorage.getItem(storageKey), 10) || 0;
+      } catch {}
       const now = Date.now();
       const FIVE_MINUTES = 5 * 60 * 1000;
-      let shouldTrack = true;
       let uniqueUser = false;
 
       if (user?.id) {
@@ -189,25 +154,14 @@ export default function ReadArticlePage() {
           .limit(1)
           .maybeSingle();
 
-        if (lastViewError) {
-          console.error("VIEW QUERY ERROR:", lastViewError);
-        }
-
+        if (lastViewError) console.error("VIEW QUERY ERROR:", lastViewError);
         uniqueUser = !lastView?.created_at;
-
-        if (lastView?.created_at) {
-          const lastViewTime = new Date(lastView.created_at).getTime();
-          if (now - lastViewTime < FIVE_MINUTES) {
-            shouldTrack = false;
-          }
+        if (lastView?.created_at && now - new Date(lastView.created_at).getTime() < FIVE_MINUTES) {
+          return;
         }
-      } else {
-        if (now - lastLocalView < FIVE_MINUTES) {
-          shouldTrack = false;
-        }
+      } else if (now - lastLocalView < FIVE_MINUTES) {
+        return;
       }
-
-      if (!shouldTrack) return;
 
       const meta = await buildAnalyticsPayload();
       const { error } = await supabase.from("views").insert([
@@ -219,310 +173,261 @@ export default function ReadArticlePage() {
         },
       ]);
 
-      if (error && error.code !== "23505") {
-        console.error("VIEW ERROR:", error);
-      }
-
-      localStorage.setItem(storageKey, now.toString());
+      if (error && error.code !== "23505") console.error("VIEW ERROR:", error);
+      try {
+        localStorage.setItem(storageKey, now.toString());
+      } catch {}
     };
 
     trackView();
   }, [article?.id, user?.id]);
 
+  /* ---------- actions ---------- */
+  const requireUser = () => {
+    if (user) return true;
+    router.push(`/signin?next=${encodeURIComponent(`/read/${slug}`)}`);
+    return false;
+  };
+
+  const handleLike = async () => {
+    if (!requireUser()) return;
+    const wasLiked = isLiked;
+    setLikeCount((c) => Math.max(0, c + (wasLiked ? -1 : 1)));
+    const ok = await toggleLike(article.id);
+    if (!ok) {
+      setLikeCount((c) => Math.max(0, c + (wasLiked ? 1 : -1)));
+      toast("Couldn't update like", "error");
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!requireUser()) return;
+    const ok = await toggleBookmark(article.id);
+    if (!ok) toast("Couldn't update your list", "error");
+    else toast(isBookmarked ? "Removed from your list" : "Saved to your list");
+  };
+
   const handleShare = async () => {
-    const url = window.location.href;
-
-    if (navigator.share) {
-      await navigator.share({
-        title: article.title,
-        text: article.title,
-        url,
-      });
-      return;
-    }
-
-    await navigator.clipboard.writeText(url);
-    alert("Link copied to clipboard");
+    const result = await shareLink({ title: article.title, url: window.location.href });
+    if (result === "copied") toast("Link copied to clipboard");
   };
 
-  const scrollToComments = () => {
-    commentsRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToResponses = () =>
+    responsesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const handlePostComment = async () => {
-    if (!user) {
-      alert("Please sign in to comment");
-      return;
-    }
-    if (!commentText.trim()) return;
+  const onResponseCount = useCallback((n) => setResponseCount(n), []);
 
-    setIsSubmitting(true);
-    const { error } = await supabase.from("comments").insert([
-      {
-        article_id: article.id,
-        user_id: user.id,
-        content: commentText.trim(),
-      },
-    ]);
-
-    if (error) {
-      console.error("POST ERROR MESSAGE:", error.message);
-      console.error("POST ERROR CODE:", error.code);
-      alert(`Failed to post comment: ${error.message || "Check console"}`);
-    } else {
-      setCommentText("");
-      fetchComments(article.id);
-    }
-    setIsSubmitting(false);
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Are you sure you want to delete this response?"))
-      return;
-
-    const { error } = await supabase
-      .from("comments")
-      .delete()
-      .eq("id", commentId);
-
-    if (error) {
-      alert("Failed to delete comment");
-    } else {
-      fetchComments(article.id);
-    }
-  };
-
-  const handleUpdateComment = async (commentId) => {
-    if (!editText.trim()) return;
-    setIsSubmitting(true);
-    const { error } = await supabase
-      .from("comments")
-      .update({ content: editText.trim() })
-      .eq("id", commentId);
-
-    if (error) {
-      alert("Failed to update comment");
-    } else {
-      setEditingId(null);
-      fetchComments(article.id);
-    }
-    setIsSubmitting(false);
-  };
-
-  const handlePostReply = async (parentId) => {
-    if (!user) {
-      alert("Please sign in to reply");
-      return;
-    }
-    if (!replyText.trim()) return;
-
-    setIsSubmitting(true);
-    const { error } = await supabase.from("comments").insert([
-      {
-        article_id: article.id,
-        user_id: user.id,
-        content: replyText.trim(),
-        parent_id: parentId,
-      },
-    ]);
-
-    if (error) {
-      console.error("POST REPLY ERROR:", error);
-      alert("Failed to post reply");
-    } else {
-      setReplyText("");
-      setReplyingTo(null);
-      fetchComments(article.id);
-    }
-    setIsSubmitting(false);
-  };
-
-  const toggleCommentLike = async (commentId, isLiked) => {
-    if (!user) {
-      alert("Please sign in to like comments");
-      return;
-    }
-
-    if (isLiked) {
-      const { error } = await supabase
-        .from("comment_likes")
-        .delete()
-        .eq("comment_id", commentId)
-        .eq("user_id", user.id);
-      if (error) console.error("UNLIKE ERROR:", error);
-    } else {
-      const { error } = await supabase
-        .from("comment_likes")
-        .insert([{ comment_id: commentId, user_id: user.id }]);
-      if (error) console.error("LIKE ERROR:", error);
-    }
-    fetchComments(article.id);
-  };
-
-  if (loading) {
-    return <p className="text-center mt-20">Loading...</p>;
-  }
+  if (loading) return <ReaderSkeleton />;
 
   if (!article) {
     return (
-      <div>
-        <p className="text-center text-black font-bold text-3xl mt-20">
-          Article not found
+      <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center px-6 text-center">
+        <h1 className="font-creato text-3xl font-bold text-black">Story not found</h1>
+        <p className="mt-3 max-w-sm text-sm text-gray-500">
+          This story may have been unpublished, or the link might be wrong.
         </p>
         <Link
           href="/explore"
-          className="text-gray-600 mx-auto w-fit mt-3 block hover:underline"
+          className="mt-6 rounded-full bg-black px-6 py-2.5 text-sm text-white hover:bg-gray-800"
         >
-          Back to Explore
+          Explore stories
         </Link>
       </div>
     );
   }
 
-  const authorName = article.users?.name || "Author";
-  const avatar = article.users?.avatar || "/placeholder.png";
-  const readingTime = Math.max(
-    1,
-    Math.ceil(
-      (article.content?.replace(/<[^>]*>?/gm, "").length || 1000) / 1000,
-    ),
+  const author = article.users || {};
+  const authorName = author.name || "Author";
+  const authorHref = `/profile/${author.username || article.author_id}`;
+  const isAuthor = user?.id === article.author_id;
+  const minutes = readingTime(article.content);
+  const cover = getImageUrl(article.cover_image);
+
+  const actionBar = (className = "") => (
+    <div
+      className={`flex items-center justify-between border-y border-gray-100 px-1 py-3 text-sm text-gray-500 ${className}`}
+    >
+      <div className="flex items-center gap-6">
+        <button
+          title="Like"
+          onClick={handleLike}
+          aria-pressed={isLiked}
+          className="flex items-center gap-1.5 transition-colors hover:text-black active:scale-95"
+        >
+          {isLiked ? (
+            <AiFillLike size={21} className="text-black" />
+          ) : (
+            <AiOutlineLike size={21} />
+          )}
+          <span>{likeCount > 0 ? likeCount : ""}</span>
+        </button>
+
+        <button
+          title="Responses"
+          onClick={scrollToResponses}
+          className="flex items-center gap-1.5 transition-colors hover:text-black"
+        >
+          <FaRegComment size={18} />
+          <span>{responseCount > 0 ? responseCount : ""}</span>
+        </button>
+      </div>
+
+      <div className="flex items-center gap-5">
+        <button
+          title={isBookmarked ? "Remove from list" : "Save"}
+          onClick={handleBookmark}
+          aria-pressed={isBookmarked}
+          className="transition-colors hover:text-black active:scale-95"
+        >
+          {isBookmarked ? (
+            <TbBookmarksFilled size={21} className="text-black" />
+          ) : (
+            <TbBookmarks size={21} />
+          )}
+        </button>
+
+        <button
+          title="Share"
+          onClick={handleShare}
+          className="transition-colors hover:text-black active:scale-95"
+        >
+          <RxShare2 size={19} />
+        </button>
+      </div>
+    </div>
   );
 
   return (
-    <div className="max-w-[800px] p-4 md:p-0 mx-auto pt-2 pb-24 md:pb-0">
-      <div className="fixed top-0 left-0 w-full h-1 z-[100] bg-transparent">
+    <div className="pb-24">
+      {/* Reading progress */}
+      <div className="fixed left-0 top-0 z-[100] h-[3px] w-full bg-transparent">
         <div
-          className="h-full bg-black transition-all duration-150 ease-out"
+          className="h-full bg-primary transition-[width] duration-150 ease-out"
           style={{ width: `${scrollProgress}%` }}
         />
       </div>
 
-      <h1 className="text-2xl md:text-[40px] font-creato font-bold text-black mt-12 mb-4 leading-tight">
-        {article.title}
-      </h1>
+      <article className="mx-auto max-w-[720px] px-5 md:px-0">
+        <h1 className="mt-10 font-creato text-[32px] font-bold leading-[1.15] tracking-tight text-black md:mt-14 md:text-[42px]">
+          {article.title}
+        </h1>
 
-      <p className="text-lg font-creato text-black/60">
-        {article.meta_description}
-      </p>
+        {article.meta_description && (
+          <p className="mt-3 font-creato text-lg leading-snug text-black/55 md:text-[22px]">
+            {article.meta_description}
+          </p>
+        )}
 
-      <div className="flex justify-between mt-6 mb-2 border-t border-b border-gray-100 py-3">
-        <Link
-          href={`/profile/${article.users?.username || article.author_id}`}
-          className="text-gray-500 text-[15px] flex gap-3 items-center group"
-        >
-          <Image
-            src={avatar}
-            width={38}
-            height={38}
-            title={authorName}
-            alt={authorName}
-            className="rounded-full object-cover border border-gray-100 group-hover:opacity-80 transition-opacity"
-          />
-          <div className="flex flex-col">
-            <p className="text-black font-medium leading-tight group-hover:text-gray-600 transition-colors">
-              {authorName}
-            </p>
-            <div className="flex items-center gap-2 text-[12px] text-gray-400">
-              <p>{readingTime} min read</p>
-              <span>-</span>
-              <p>
-                {new Date(article.created_at).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
+        {/* Author */}
+        <div className="mt-8 flex items-center gap-3">
+          <Link href={authorHref} className="shrink-0">
+            <Avatar src={author.avatar} name={authorName} size={44} />
+          </Link>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Link
+                href={authorHref}
+                className="truncate text-[15px] font-medium text-black hover:underline"
+              >
+                {authorName}
+              </Link>
+              {isAuthor && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <Link href={`/write/${article.id}`} className="text-[14px] text-green-primary hover:underline">
+                    Edit story
+                  </Link>
+                </>
+              )}
             </div>
+            <p className="text-[13px] text-gray-500">
+              {minutes} min read · {formatDate(article.published_at || article.created_at, true)}
+            </p>
           </div>
-        </Link>
-      </div>
+        </div>
 
-      <div className="md:static fixed bottom-0 left-0 w-full md:w-auto z-10 md:z-auto bg-white md:bg-transparent border-t md:border-t-0 md:border-b border-gray-100 py-3 md:py-2 px-6 md:px-0 md:mb-8 transition-all">
-        <div className="max-w-[800px] mx-auto w-full h-10 gap-6 flex justify-center md:justify-start items-center">
-          <button
-            title="like"
-            onClick={() => toggleLike(article.id)}
-            className="cursor-pointer transition-transform active:scale-95 flex items-center gap-2 text-sm text-gray-500"
-          >
-            {isLiked ? (
-              <AiFillLike size={21} className="text-black" />
-            ) : (
-              <AiOutlineLike
-                size={21}
-                className="text-gray-500 hover:text-black transition-colors"
-              />
-            )}
-            Like
-          </button>
+        {actionBar("mt-8")}
 
-          <button
-            title="bookmark"
-            onClick={() => toggleBookmark(article.id)}
-            className="cursor-pointer transition-transform active:scale-95 flex items-center gap-2 text-sm text-gray-500"
-          >
-            {isBookmarked ? (
-              <TbBookmarksFilled size={21} className="text-black" />
-            ) : (
-              <TbBookmarks
-                size={21}
-                className="text-gray-500 transition-colors"
-              />
-            )}
-            Save
-          </button>
-
-          <button
-            title="share"
-            onClick={handleShare}
-            className="cursor-pointer transition-transform active:scale-95 flex items-center gap-2 text-sm text-gray-500"
-          >
-            <RxShare2
-              size={19}
-              className="text-gray-500 hover:text-black transition-colors"
+        {cover && (
+          <figure className="mt-10">
+            <Image
+              width={1400}
+              height={800}
+              priority
+              src={cover}
+              sizes="(min-width: 768px) 720px, 100vw"
+              className="h-auto w-full rounded-sm object-cover"
+              alt={article.title}
             />
-            Share
-          </button>
+          </figure>
+        )}
+
+        <div
+          className={`prose prose-lg mt-10 max-w-none text-[20px] leading-8 text-black/85 ${sourceSerif.className}`}
+        >
+          {HTMLReactParser(sanitizeHtml(article.content))}
         </div>
-      </div>
 
-      {article.cover_image && (
-        <Image
-          width={600}
-          height={400}
-          priority
-          src={article.cover_image}
-          className="w-full rounded my-8 object-cover"
-          alt={article.title}
-        />
-      )}
+        {article.categories?.length > 0 && (
+          <div className="mt-12 flex flex-wrap gap-2">
+            {article.categories.map((cat) => (
+              <Link
+                key={cat}
+                href={`/explore?category=${encodeURIComponent(cat)}`}
+                className="rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200"
+              >
+                {cat}
+              </Link>
+            ))}
+          </div>
+        )}
 
-      <div
-        className={`prose max-w-none text-xl leading-8 tracking-tight text-black ${sourceSerif.className}`}
-      >
-        {HTMLReactParser(sanitizeHtml(article.content))}
-      </div>
+        {actionBar("mt-10")}
 
-      {article.categories?.length > 0 && (
-        <div className="mt-10 flex flex-wrap gap-2">
-          {article.categories.map((cat) => (
-            <Link
-              key={cat}
-              href={`/explore?category=${encodeURIComponent(cat)}`}
-              className="px-3 py-1 bg-gray-50 text-gray-500 rounded-full text-xs border border-gray-100 hover:bg-gray-100 transition-colors"
-            >
-              {cat}
+        {/* Written by */}
+        <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <Link href={authorHref}>
+              <Avatar src={author.avatar} name={authorName} size={64} />
             </Link>
-          ))}
+            <Link href={authorHref} className="mt-4 block">
+              <h2 className="font-creato text-2xl font-bold text-black hover:underline">
+                Written by {authorName}
+              </h2>
+            </Link>
+            {author.bio && (
+              <p className="mt-2 max-w-md text-sm leading-relaxed text-gray-600">{author.bio}</p>
+            )}
+          </div>
+          <Link
+            href={authorHref}
+            className="w-fit shrink-0 rounded-full border border-gray-300 px-5 py-2 text-sm text-black transition-colors hover:border-black"
+          >
+            View profile
+          </Link>
         </div>
-      )}
 
-      <div className="py-10">
-        <hr className="my-6" />
-        <p className="text-xl font-semibold mb-8 text-black">Related Stories</p>
-        <RelatedArticles
-          categories={article.categories}
-          currentId={article.id}
-        />
+        <hr className="mt-12 border-gray-100" />
+
+        <div ref={responsesRef} className="scroll-mt-24 pt-12">
+          <Responses articleId={article.id} onCountChange={onResponseCount} />
+        </div>
+      </article>
+
+      <div className="mt-16 bg-gray-50 py-14">
+        <div className="mx-auto max-w-[720px] px-5 md:px-0">
+          <RelatedArticles
+            categories={article.categories}
+            currentId={article.id}
+            authorId={article.author_id}
+          />
+          <Link
+            href="/explore"
+            className="mt-12 inline-block rounded-full border border-gray-300 bg-white px-5 py-2 text-sm hover:border-black"
+          >
+            See all stories
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Vichento
 
-## Getting Started
+**Read. Write. Think deeper.** A Medium-style publishing platform built with Next.js 16 (App Router), Tailwind CSS v4 and Supabase.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # then add your Supabase URL + anon key
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+The UI runs without a database. If the Supabase env vars are missing, the app
+falls back to a placeholder client: public pages render and data lists show
+their empty states.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project map
 
-## Learn More
+| Path | What it is |
+| --- | --- |
+| `src/app/page.js` | Landing page (signed out) / personalised feed (signed in) |
+| `src/app/read/[slug]` | Story reader with likes, saves, share and responses |
+| `src/app/(protected)/write` | Story editor (`/write` new, `/write/[id]` edit) |
+| `src/app/(protected)/stories` | Your drafts & published stories |
+| `src/app/(protected)/library` | Saved list + reading history |
+| `src/app/(protected)/stats` | Author analytics (overall and per story) |
+| `src/app/(protected)/explore`, `search` | Topic browsing & search |
+| `src/app/profile/[username]` | Public profile + settings (`?settings=true`) |
+| `src/app/signin`, `signup`, `forgot-password`, `reset-password`, `verify-email`, `auth/callback` | Auth flow |
+| `src/app/components/editor/ArticleEditor.jsx` | The shared rich-text editor |
+| `src/lib/constants.js` | Topic list (single source of truth) |
+| `src/lib/articleUtils.js` | Image URLs, excerpts, reading time, dates, slugs, share |
+| `src/context/AuthContext.js` | `user`, `profile`, `refreshProfile`, `signOut` |
+| `src/context/ToastContext.js` | `useToast()` notifications |
 
-To learn more about Next.js, take a look at the following resources:
+## Database (Supabase) — what the code expects
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Tables**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `users`: `id` (= auth user id), `email`, `name`, `username` (unique), `avatar`, `bio`, `about_rich`, `dob`, `profession`, `interests text[]`, `twitter`, `linkedin`, `instagram`, `website`
+- `articles`: `id`, `author_id` → users (FK named `fk_author`), `title`, `slug` (unique), `content` (HTML), `meta_description`, `cover_image`, `categories text[]`, `status` (`draft` | `published`), `view_count`, `published_at`, `created_at`, `updated_at`, plus SEO columns `seo_title`, `seo_description`, `seo_slug`, `canonical_url`, `og_title`, `og_description`, `robots`, `twitter_card`, `schema_type`, `focus_keyword`, `nofollow_links`
+- `likes`, `bookmarks`: `id`, `user_id`, `article_id`, `created_at` + analytics columns (see below)
+- `views`: `id`, `article_id`, `user_id` (nullable), `unique_user`, `created_at` + analytics columns
+- `comments`: `id`, `article_id`, `user_id`, `content`, `parent_id` (nullable, for replies), `created_at`
+- `comment_likes`: `comment_id`, `user_id`
+- `bug_reports`: see `BUG_REPORTS_SETUP.sql`
+- `early_access`: `email` (unique), `name`, `created_at`
 
-## Deploy on Vercel
+Analytics columns written by `buildAnalyticsPayload()`: `referrer`, `location`, `device_type`, `device_os`, `device_browser`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Storage buckets** (public): `article-images` (covers + inline images), `avatars` (uploaded profile pictures), `user_avatars` (default avatars `1.png`–`12.png`, see `public/avatars`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Auth**: enable Email and Google providers. Add `<your-site>/auth/callback` and `<your-site>/reset-password` to the allowed redirect URLs.

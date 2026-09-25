@@ -2,38 +2,37 @@
 import Link from "next/link";
 import { EnvelopeIcon } from "@heroicons/react/24/outline";
 import GoogleSignInButton from "../components/GoogleSignInButton";
-import Image from "next/image";
+import AuthShell, { LegalNote, optionButtonClass } from "../components/AuthShell";
 
 export default function SignInPage() {
   return (
-    <div className="w-full h-[calc(100vh-200px)] flex flex-col justify-center items-center px-6">
-      <Image width={60} height={60} alt="logo" src={"/logo.png"} />
-      <h1 className="text-3xl my-10 text-black font-creato tracking-tight">
-        welcome back.
-      </h1>
-
-      <GoogleSignInButton />
-
-      {/* Email */}
-      <Link
-        href="/signin/email"
-        className="border mt-3 w-[280px] py-2 text-black rounded-full text-center flex items-center justify-center gap-2"
-      >
-        <EnvelopeIcon className="size-5" />
-        Sign in with email
-      </Link>
-
-      <p className="text-sm text-black mt-6">
-        No account?{" "}
-        <Link href="/signup" className="underline">
-          Create one
+    <AuthShell
+      title="Welcome back."
+      footer={
+        <>
+          <p className="text-sm text-black">
+            No account?{" "}
+            <Link href="/signup" className="font-medium underline underline-offset-2">
+              Create one
+            </Link>
+          </p>
+          <p className="mt-3 text-sm text-black/60">
+            Forgot email or trouble signing in?{" "}
+            <Link href="/forgot-password" className="underline underline-offset-2 hover:text-black">
+              Get help
+            </Link>
+          </p>
+          <LegalNote action="Sign in" />
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <GoogleSignInButton label="Sign in with Google" />
+        <Link href="/signin/email" className={optionButtonClass}>
+          <EnvelopeIcon className="size-5" />
+          Sign in with email
         </Link>
-      </p>
-
-      <p className="text-[12px] text-center  text-black/60 mt-6">
-        By clicking &quot;Sign in&quot;, you accept Vichento&apos;s Terms of
-        Service and Privacy Policy.
-      </p>
-    </div>
+      </div>
+    </AuthShell>
   );
 }

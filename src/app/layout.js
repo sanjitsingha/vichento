@@ -1,6 +1,7 @@
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
 import Navbar from "./components/Navbar";
 import ThemeProvider from "@/lib/ThemeProvider";
 
@@ -14,14 +15,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"], // choose weights you need
-});
-
 export const metadata = {
-  title: "Vichento - Read. Write. Think deeper",
-  description: "",
+  title: {
+    default: "Vichento - Read. Write. Think deeper",
+    template: "%s | Vichento",
+  },
+  description:
+    "Vichento is a home for thoughtful reading and meaningful writing. Discover stories and ideas from independent writers, or share your own.",
+};
+
+export const viewport = {
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }) {
@@ -29,10 +33,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-        <AuthProvider>
-          <Navbar />
-          {children}
-        </AuthProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Navbar />
+              {children}
+            </ToastProvider>
+          </AuthProvider>
         </ThemeProvider>
         <script defer src="https://cloud.umami.is/script.js" data-website-id="33d6e7f4-19cf-43b9-89d7-77bdb3f20200"></script>
       </body>

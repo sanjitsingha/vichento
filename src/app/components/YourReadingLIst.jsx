@@ -1,8 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
-import { useAuthContext } from '@/context/AuthContext';
-import Image from 'next/image';
+"use client";
+
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuthContext } from "@/context/AuthContext";
+import { formatDate, readingTime } from "@/lib/articleUtils";
+import Avatar from "./ui/Avatar";
+
+const Header = ({ showAll }) => (
+  <div className="mb-4 flex items-center justify-between">
+    <p className="font-creato text-[16px] font-bold text-black">Saved stories</p>
+    {showAll && (
+      <Link href="/library" className="text-sm text-gray-500 hover:text-black">
+        See all
+      </Link>
+    )}
+  </div>
+);
 
 const YourReadingLIst = () => {
   const { user } = useAuthContext();
@@ -10,20 +24,20 @@ const YourReadingLIst = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     const fetchBookmarks = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from('bookmarks')
-        .select(`
+        .from("bookmarks")
+        .select(
+          `
           id,
           articles (
             id,
             title,
             slug,
+            content,
             created_at,
             users!fk_author (
               id,
@@ -31,13 +45,14 @@ const YourReadingLIst = () => {
               avatar
             )
           )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
         .limit(3);
 
       if (!error && data) {
-        setBookmarks(data);
+        setBookmarks(data.filter((b) => b.articles));
       }
       setLoading(false);
     };
@@ -47,17 +62,14 @@ const YourReadingLIst = () => {
 
   if (loading) {
     return (
-      <div className='w-full h-fit p-2'>
-        <div className='flex items-center justify-between mb-4'>
-          <p className='font-creato text-black font-bold'>Saved Stories</p>
-          <Link href="/library" className='text-sm text-gray-500 hover:text-black'>view all</Link>
-        </div>
-        <div className='animate-pulse space-y-4'>
+      <div className="w-full">
+        <Header />
+        <div className="space-y-5">
           {[1, 2].map((i) => (
-            <div key={i} className='py-2'>
-              <div className='h-3 bg-gray-200 rounded w-1/3 mb-2'></div>
-              <div className='h-4 bg-gray-200 rounded w-full mb-1'></div>
-              <div className='h-4 bg-gray-200 rounded w-2/3'></div>
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-1/3 rounded shimmer" />
+              <div className="h-4 w-full rounded shimmer" />
+              <div className="h-4 w-2/3 rounded shimmer" />
             </div>
           ))}
         </div>
@@ -65,54 +77,49 @@ const YourReadingLIst = () => {
     );
   }
 
-  if (!user || bookmarks.length === 0) {
+  if (bookmarks.length === 0) {
     return (
-      <div className='w-full h-fit p-2'>
-        <div className='flex items-center justify-between mb-4'>
-          <p className='font-creato font-bold'>Saved Stories</p>
+      <div className="w-full">
+        <Header />
+        <div className="rounded-xl bg-gray-50 p-4">
+          <p className="text-sm leading-relaxed text-gray-600">
+            Tap the bookmark icon on any story to save it here and read it later.
+          </p>
         </div>
-        <p className='text-sm text-gray-500'>No stories saved yet.</p>
       </div>
     );
   }
 
   return (
-    <div className='w-full h-fit p-2'>
-      <div className='flex items-center justify-between mb-4'>
-        <p className='font-creato text-black font-bold text-[16px]'>Saved Stories</p>
-        <Link href="/library" className='text-sm text-gray-500 hover:text-black'>view all</Link>
-      </div>
+    <div className="w-full">
+      <Header showAll />
 
-      <div className='flex flex-col gap-6'>
-        {bookmarks.map((bookmark) => (
-          <div key={bookmark.id} className='group'>
-            <div className='flex gap-2 items-center mb-2'>
-              <div className='w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-[10px] text-black/70 font-medium overflow-hidden'>
-                {bookmark.articles?.users?.avatar ? (
-                  <Image src={bookmark.articles.users.avatar} alt='avatar' width={300} height={300} className='object-cover w-full h-full' />
-                ) : (
-                  bookmark.articles?.users?.name?.charAt(0).toUpperCase() || 'U'
-                )}
-              </div>
-              <p className='text-[13px] font-medium text-gray-600'>{bookmark.articles?.users?.name || 'Unknown'}</p>
+      <div className="flex flex-col gap-5">
+        {bookmarks.map(({ id, articles: a }) => (
+          <div key={id} className="group">
+            <div className="mb-1.5 flex items-center gap-2">
+              <Avatar src={a.users?.avatar} name={a.users?.name} size={20} />
+              <p className="truncate text-[13px] text-gray-600">
+                {a.users?.name || "Unknown"}
+              </p>
             </div>
 
-            <Link href={`/read/${bookmark.articles?.slug}`}>
-              <p className='text-[15px] font-bold font-creato leading-tight text-gray-900 group-hover:underline decoration-gray-400'>
-                {bookmark.articles?.title}
+            <Link href={`/read/${a.slug}`}>
+              <p className="line-clamp-2 font-creato text-[15px] font-bold leading-snug text-gray-900 decoration-gray-400 group-hover:underline">
+                {a.title}
               </p>
             </Link>
 
-            <p className='text-[12px] text-gray-500 mt-1.5'>
-              {new Date(bookmark.articles?.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              <span className='mx-1'>·</span>
-              {Math.max(1, Math.ceil((bookmark.articles?.content?.length || 1000) / 1000))} min read
+            <p className="mt-1 text-[12px] text-gray-500">
+              {formatDate(a.created_at)}
+              <span className="mx-1">·</span>
+              {readingTime(a.content)} min read
             </p>
           </div>
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default YourReadingLIst;

@@ -1,42 +1,32 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { CATEGORIES } from "@/lib/constants";
 
-const CATEGORIES = [
-  "Technology",
-  "Startups",
-  "Design",
-  "Ai",
-  "Health",
-  "Productivity",
-  "Business",
-];
-
-const RecomendedTopics = () => {
-  const router = useRouter();
-
-  const handleClick = (category) => {
-    router.push(`/explore?category=${category}`);
-  };
-
+const RecomendedTopics = ({ limit = 9 }) => {
   return (
     <div className="w-full">
-      <p className="font-semibold mb-4 hidden md:block text-black font-creato">
-        Explore Topics
-      </p>
+      <p className="mb-4 font-creato font-bold text-black">Recommended topics</p>
 
-      <div className="flex gap-3 overflow-x-auto no-scrollbar md:flex-wrap md:overflow-visible">
-        {CATEGORIES.map((cat) => (
-          <button
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.slice(0, limit).map((cat) => (
+          <Link
             key={cat}
-            onClick={() => handleClick(cat)}
-            className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm border bg-white text-gray-700 border-gray-300 hover:border-black transition"
+            href={`/explore?category=${encodeURIComponent(cat)}`}
+            className="rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 hover:text-black"
           >
             {cat}
-          </button>
+          </Link>
         ))}
       </div>
+
+      <Link
+        href="/explore"
+        className="mt-4 inline-block text-sm text-gray-500 transition-colors hover:text-black"
+      >
+        See more topics
+      </Link>
     </div>
   );
 };

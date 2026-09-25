@@ -2,30 +2,27 @@ import React from "react";
 
 const ShimmerArticle = () => {
   return (
-    <div className="border-b border-gray-100 pb-8 mb-8 animate-pulse">
+    <div className="border-b border-gray-100 py-8 first:pt-2" aria-hidden>
       {/* Author */}
-      <div className="flex items-center gap-4 mb-3">
-        <div className="h-3 w-24 bg-gray-200 rounded"></div>
-        <div className="h-3 w-20 bg-gray-100 rounded"></div>
+      <div className="flex items-center gap-2">
+        <div className="h-[22px] w-[22px] rounded-full shimmer" />
+        <div className="h-3 w-28 rounded shimmer" />
       </div>
 
       {/* Content */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <div className="h-6 w-3/4 bg-gray-200 rounded mb-3"></div>
-          <div className="h-4 w-full bg-gray-100 rounded mb-2"></div>
-          <div className="h-4 w-5/6 bg-gray-100 rounded"></div>
+      <div className="mt-4 flex gap-6 sm:gap-10">
+        <div className="flex-1 space-y-3">
+          <div className="h-5 w-4/5 rounded shimmer" />
+          <div className="h-4 w-full rounded shimmer" />
+          <div className="hidden h-4 w-2/3 rounded shimmer sm:block" />
         </div>
-
-        {/* Image placeholder */}
-        <div className="w-[180px] h-[120px] bg-gray-300 rounded"></div>
+        <div className="h-[56px] w-[80px] rounded-sm shimmer sm:h-[107px] sm:w-[160px]" />
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-10 mt-4">
-        <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
-        <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
-        <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
+      {/* Meta */}
+      <div className="mt-4 flex justify-between">
+        <div className="h-3 w-32 rounded shimmer" />
+        <div className="h-3 w-20 rounded shimmer" />
       </div>
     </div>
   );

@@ -4,8 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import AuthShell, {
+  FormError,
+  getNextPath,
+  inputClass,
+  primaryButtonClass,
+} from "@/app/components/AuthShell";
 
 export default function EmailLogin() {
   const router = useRouter();
@@ -21,94 +26,91 @@ export default function EmailLogin() {
     setLoading(true);
     setErrorMsg("");
 
-    try {
-      // ✅ Supabase login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: pass,
-      });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: pass,
+    });
 
-      if (error) throw error;
-
-      // ✅ No need setUser — Supabase handles session
-      router.push("/");
-    } catch (error) {
-      setErrorMsg("Invalid email or password");
+    if (error) {
+      setLoading(false);
+      if (/confirm/i.test(error.message)) {
+        router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+        return;
+      }
+      setErrorMsg(
+        /invalid/i.test(error.message)
+          ? "That email and password combination doesn't match our records."
+          : "We couldn't sign you in right now. Please try again.",
+      );
+      return;
     }
 
-    setLoading(false);
+    // Supabase stores the session; AuthContext picks it up via onAuthStateChange.
+    router.replace(getNextPath());
   };
 
   return (
-    <div className="w-full h-[calc(100vh-200px)] flex flex-col justify-center items-center px-6">
-      <Image width={60} height={60} alt="logo" src={"/logo.png"} />
-
-      <h1 className="text-2xl text-black font-creato tracking-tight my-10">
-        Sign in with email
-      </h1>
-
-      <form
-        className="w-full max-w-[300px] flex flex-col"
-        onSubmit={handleLogin}
-      >
-        {/* EMAIL */}
-        <label className="text-xs text-gray-700">Email</label>
+    <AuthShell
+      title="Sign in with email"
+      subtitle="Enter the email address and password associated with your account."
+      footer={
+        <div className="flex flex-col items-center gap-3 text-sm">
+          <Link href="/forgot-password" className="text-black/60 hover:text-black">
+            Forgot your password?
+          </Link>
+          <Link href="/signin" className="text-black/60 underline underline-offset-2 hover:text-black">
+            ← All sign in options
+          </Link>
+        </div>
+      }
+    >
+      <form className="flex flex-col" onSubmit={handleLogin}>
+        <label htmlFor="email" className="text-xs text-gray-700">
+          Your email
+        </label>
         <input
+          id="email"
           type="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="border-b py-1 outline-none text-black"
+          className={inputClass}
           required
         />
 
-        {/* PASSWORD */}
-        <label className="text-xs mt-6 text-gray-700">Password</label>
-
+        <label htmlFor="password" className="mt-6 text-xs text-gray-700">
+          Password
+        </label>
         <div className="relative w-full">
           <input
+            id="password"
             type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
             value={pass}
             onChange={(e) => setPass(e.target.value)}
-            className="border-b py-1 outline-none w-full text-black"
+            className={`${inputClass} pr-8`}
             required
           />
-
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-2 top-1/2 -translate-y-1/2"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-black"
           >
             {showPassword ? (
-              <EyeSlashIcon className="w-5 h-5" />
+              <EyeSlashIcon className="h-5 w-5" />
             ) : (
-              <EyeIcon className="w-5 h-5" />
+              <EyeIcon className="h-5 w-5" />
             )}
           </button>
         </div>
 
-        {/* ERROR */}
-        {errorMsg && (
-          <div className="bg-red-100 p-2 mt-6 border rounded">
-            <p className="text-xs text-red-500">{errorMsg}</p>
-          </div>
-        )}
+        <FormError>{errorMsg}</FormError>
 
-        {/* BUTTON */}
-        <button
-          disabled={loading}
-          className="bg-black text-white rounded-full py-2 mt-10"
-        >
-          {loading ? "Signing in..." : "Sign In"}
+        <button type="submit" disabled={loading} className={`${primaryButtonClass} mt-10`}>
+          {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
-
-      <Link href="/signin" className="mt-4 text-black/50 underline text-sm">
-        Go back
-      </Link>
-
-      <Link href="/forgot-password" className="mt-4 text-black/50 text-sm">
-        Having problem logging in?
-      </Link>
-    </div>
+    </AuthShell>
   );
 }

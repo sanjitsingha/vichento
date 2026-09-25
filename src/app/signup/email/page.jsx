@@ -3,26 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthContext } from "@/context/AuthContext";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
+import { generateUsername } from "@/lib/userUtils";
+import { useAuthContext } from "@/context/AuthContext";
+import AuthShell, {
+  FormError,
+  LegalNote,
+  inputClass,
+  primaryButtonClass,
+} from "@/app/components/AuthShell";
 
 // ---------------- AVATARS ----------------
-const AVATARS = [
-  "1.png",
-  "2.png",
-  "3.png",
-  "4.png",
-  "5.png",
-  "6.png",
-  "7.png",
-  "8.png",
-  "9.png",
-  "10.png",
-  "11.png",
-  "12.png",
-];
+const AVATARS = Array.from({ length: 12 }, (_, i) => `${i + 1}.png`);
 
 const professions = [
   "Student",
@@ -42,22 +35,22 @@ const professions = [
 // ---------------- HELPERS ----------------
 const getRandomAvatar = () => {
   const file = AVATARS[Math.floor(Math.random() * AVATARS.length)];
-
   const { data } = supabase.storage.from("user_avatars").getPublicUrl(file);
-
   return data.publicUrl;
 };
 
-const generateUsername = (name) => {
-  const cleanName = name.toLowerCase().replace(/\s+/g, "");
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `${cleanName}${random}`;
-};
+
+const passwordChecks = (pass) => [
+  { ok: pass.length >= 8, label: "8+ characters" },
+  { ok: /[A-Za-z]/.test(pass), label: "a letter" },
+  { ok: /\d/.test(pass), label: "a number" },
+  { ok: /[^A-Za-z0-9]/.test(pass), label: "a symbol" },
+];
 
 // ---------------- COMPONENT ----------------
 export default function EmailSignup() {
   const router = useRouter();
-  const { setUser } = useAuthContext();
+  const { refreshProfile } = useAuthContext();
 
   const [step, setStep] = useState(1);
 
@@ -74,179 +67,129 @@ export default function EmailSignup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const checks = passwordChecks(pass);
+  const today = new Date().toISOString().split("T")[0];
+
   // ---------------- STEP 1 ----------------
-  const handleSignupStep1 = async (e) => {
+  const handleSignupStep1 = (e) => {
     e.preventDefault();
     setErrorMsg("");
 
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;
-
-    if (!passwordRegex.test(pass)) {
+    if (!checks.every((c) => c.ok)) {
       return setErrorMsg(
-        "Password must be at least 6 characters and include a letter, number, and special character.",
+        "Password must be at least 8 characters and include a letter, a number and a symbol.",
       );
-    }
-
-    if (!email) {
-      return setErrorMsg("Please enter a valid email.");
     }
 
     setStep(2);
   };
 
   // ---------------- STEP 2 ----------------
-  const handleSignupStep2 = async () => {
-    setLoading(true);
+  const handleSignupStep2 = async (e) => {
+    e.preventDefault();
     setErrorMsg("");
 
-    if (!name || !dob || !profession) {
-      setLoading(false);
-      return setErrorMsg("Please fill all fields.");
+    if (!name.trim() || !dob || !profession) {
+      return setErrorMsg("Please fill in all fields.");
     }
 
+    setLoading(true);
     try {
       const username = generateUsername(name);
       const avatar = getRandomAvatar();
+      const profileData = {
+        name: name.trim(),
+        username,
+        dob,
+        profession,
+        avatar,
+      };
 
-      // ✅ Create auth user
+      // Keep profile details in user_metadata so /auth/callback can create
+      // the users row after email confirmation if there is no session yet.
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password: pass,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            display_name: name,
+            display_name: profileData.name,
             avatar_url: avatar,
+            username,
+            dob,
+            profession,
           },
         },
       });
 
       if (error) throw error;
 
-      const user = data.user;
-
-      if (!user) {
-        setLoading(false);
-        return setErrorMsg("Please verify your email first.");
+      // Email confirmation required -> no session yet.
+      if (!data.session) {
+        router.push(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+        return;
       }
 
-      // ✅ Insert into users table
-      const { error: dbError } = await supabase.from("users").insert([
-        {
-          id: user.id,
-          email,
-          name,
-          username,
-          dob,
-          profession,
-          avatar,
-        },
-      ]);
+      const { error: dbError } = await supabase
+        .from("users")
+        .upsert([{ id: data.user.id, email: email.trim(), ...profileData }]);
 
       if (dbError) throw dbError;
 
-      router.push("/");
+      await refreshProfile();
+      router.replace("/");
     } catch (error) {
-      setErrorMsg(error.message);
+      setErrorMsg(error.message || "Something went wrong. Please try again.");
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-  return (
-    <div className="w-full min-h-[calc(100vh-200px)] flex flex-col justify-center items-center px-6">
-      {/* ---------------- STEP 1 ---------------- */}
-      {step === 1 && (
-        <>
-          <Image width={60} height={60} alt="logo" src={"/logo.png"} />
-
-          <h1 className="text-2xl mt-10 text-black font-creato tracking-tight">
-            Create your account
-          </h1>
-
-          <p className="text-sm mt-2 text-black/60 text-center mb-10">
-            It only takes a moment to get started with your account.
-          </p>
-
-          <form
-            className="w-full max-w-[300px] flex flex-col"
-            onSubmit={handleSignupStep1}
-          >
-            <label className="text-xs mt-4 text-gray-700">Email</label>
-
-            <input
-              type="email"
-              placeholder="johndoe@hotmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border-b py-1 outline-none"
-              required
-            />
-
-            <div className="relative mt-4">
-              <label className="text-xs text-gray-700">Password</label>
-
-              <input
-                type={showPassword ? "text" : "password"}
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                className="w-full border-b py-1 outline-none"
-                required
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-2 top-6"
-              >
-                {showPassword ? (
-                  <EyeSlashIcon className="w-5 h-5" />
-                ) : (
-                  <EyeIcon className="w-5 h-5" />
-                )}
-              </button>
-            </div>
-
-            {errorMsg && (
-              <p className="text-red-500 text-xs mt-3">{errorMsg}</p>
-            )}
-
-            <button className="bg-black text-white rounded-full py-2 mt-6">
-              Next →
-            </button>
-          </form>
-        </>
-      )}
-
-      {/* ---------------- STEP 2 ---------------- */}
-      {step === 2 && (
-        <div className="w-full max-w-[300px]">
-          <h1 className="text-xl text-center">Tell us about you</h1>
-
+  if (step === 2) {
+    return (
+      <AuthShell
+        title="Tell us about you"
+        subtitle="This helps us personalise Vichento for you."
+        redirectIfAuthed={false}
+      >
+        <form onSubmit={handleSignupStep2} className="flex flex-col">
+          <label htmlFor="name" className="text-xs text-gray-700">
+            Full name
+          </label>
           <input
+            id="name"
             type="text"
-            placeholder="Full Name"
-            className="w-full border-b mt-6 py-1"
+            autoComplete="name"
+            className={inputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
           />
 
+          <label htmlFor="dob" className="mt-6 text-xs text-gray-700">
+            Date of birth
+          </label>
           <input
+            id="dob"
             type="date"
-            className="w-full border-b mt-4 py-1"
+            max={today}
+            className={inputClass}
             value={dob}
             onChange={(e) => setDob(e.target.value)}
+            required
           />
 
-          <p className="mt-6 mb-2">Choose profession</p>
-
+          <p className="mb-3 mt-6 text-xs text-gray-700">What do you do?</p>
           <div className="flex flex-wrap gap-2">
             {professions.map((p) => (
               <button
                 key={p}
                 type="button"
+                aria-pressed={profession === p}
                 onClick={() => setProfession(p)}
-                className={`px-3 py-1 text-sm rounded-full ${
-                  profession === p ? "bg-black text-white" : "bg-gray-200"
+                className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+                  profession === p
+                    ? "border-black bg-black text-white"
+                    : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-400"
                 }`}
               >
                 {p}
@@ -254,24 +197,101 @@ export default function EmailSignup() {
             ))}
           </div>
 
-          {errorMsg && <p className="text-red-500 text-xs mt-3">{errorMsg}</p>}
+          <FormError>{errorMsg}</FormError>
 
-          <button
-            onClick={handleSignupStep2}
-            disabled={loading}
-            className="bg-black text-white rounded-full py-2 mt-6 w-full"
-          >
-            {loading ? "Creating..." : "Create Account"}
+          <button type="submit" disabled={loading} className={`${primaryButtonClass} mt-8`}>
+            {loading ? "Creating your account…" : "Create account"}
           </button>
 
           <button
-            onClick={() => setStep(1)}
-            className="mt-4 text-sm underline text-center w-full"
+            type="button"
+            onClick={() => {
+              setErrorMsg("");
+              setStep(1);
+            }}
+            className="mt-4 text-center text-sm text-black/60 underline underline-offset-2 hover:text-black"
           >
             Go back
           </button>
+        </form>
+      </AuthShell>
+    );
+  }
+
+  return (
+    <AuthShell
+      title="Create your account"
+      subtitle="It only takes a moment to get started."
+      footer={
+        <>
+          <Link
+            href="/signup"
+            className="text-sm text-black/60 underline underline-offset-2 hover:text-black"
+          >
+            ← All sign up options
+          </Link>
+          <LegalNote action="Continue" />
+        </>
+      }
+    >
+      <form className="flex flex-col" onSubmit={handleSignupStep1}>
+        <label htmlFor="email" className="text-xs text-gray-700">
+          Your email
+        </label>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          placeholder="johndoe@hotmail.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className={inputClass}
+          required
+        />
+
+        <label htmlFor="password" className="mt-6 text-xs text-gray-700">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            className={`${inputClass} pr-8`}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-black"
+          >
+            {showPassword ? (
+              <EyeSlashIcon className="h-5 w-5" />
+            ) : (
+              <EyeIcon className="h-5 w-5" />
+            )}
+          </button>
         </div>
-      )}
-    </div>
+
+        {pass && (
+          <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+            {checks.map((c) => (
+              <li key={c.label} className={c.ok ? "text-green-700" : "text-gray-400"}>
+                {c.ok ? "✓" : "•"} {c.label}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <FormError>{errorMsg}</FormError>
+
+        <button type="submit" className={`${primaryButtonClass} mt-8`}>
+          Continue
+        </button>
+      </form>
+    </AuthShell>
   );
 }

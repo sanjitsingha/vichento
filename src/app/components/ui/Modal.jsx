@@ -2,30 +2,38 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
-export default function Modal({ open, onOpenChange, children, size = "md" }) {
-  const maxWidthClass = size === "large" ? "max-w-4xl" : "max-w-md";
+export default function Modal({
+  open,
+  onOpenChange,
+  children,
+  size = "md",
+  title = "Dialog",
+  hideClose = false,
+}) {
+  const maxWidthClass =
+    size === "large" ? "max-w-4xl" : size === "sm" ? "max-w-sm" : "max-w-md";
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        {/* Backdrop */}
-        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[9998] data-[state=open]:animate-fadeIn data-[state=closed]:animate-fadeOut" />
+        <Dialog.Overlay className="modal-overlay fixed inset-0 z-[9998] bg-black/40 backdrop-blur-[2px]" />
 
-        {/* Modal Content */}
-        <Dialog.Title className="opacity-0">Model Pop up</Dialog.Title>
         <Dialog.Content
-          className={`
-            fixed top-1/2 left-1/2 
-            -translate-x-1/2 -translate-y-1/2 
-            bg-white rounded-lg shadow-2xl 
-            w-[95%] ${maxWidthClass} p-6
-            z-[9999]
-            data-[state=open]:animate-scaleIn 
-            data-[state=closed]:animate-scaleOut
-            focus:outline-none
-          `}
+          aria-describedby={undefined}
+          className={`modal-content fixed left-1/2 top-1/2 z-[9999] max-h-[90vh] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl focus:outline-none ${maxWidthClass}`}
         >
-          {/* Actual Modal Content */}
+          {/* Screen-reader title (visible headings live in children) */}
+          <Dialog.Title className="sr-only">{title}</Dialog.Title>
+
+          {!hideClose && (
+            <Dialog.Close
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black"
+            >
+              <XMarkIcon className="size-5" />
+            </Dialog.Close>
+          )}
+
           {children}
         </Dialog.Content>
       </Dialog.Portal>
